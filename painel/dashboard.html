@@ -1,0 +1,189 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel de Recrutamento | Polícia Penal</title>
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/global.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/animations.css">
+
+<link rel="stylesheet" href="../css/dashboard.css">
+<script defer src="../js/storage.js"></script><script defer src="../js/app.js"></script><script defer src="../js/dashboard.js"></script></head><body class="admin-body">
+
+<aside class="sidebar">
+  <a class="brand" href="dashboard.html"><span class="brand-mark"><img class="brand-logo-image" src="../assets/images/logo-policia-penal-ceara.png" alt="Logo Polícia Penal Ceará"></span><span class="brand-copy"><strong>Polícia Penal Ceará</strong><small>Recrutamento</small></span></a>
+  <nav class="sidebar-nav">
+    <button class="sidebar-link active" data-section-link="visao"><span class="icon">◫</span>Visão geral</button>
+    <button class="sidebar-link" data-section-link="candidatos"><span class="icon">◎</span>Candidatos</button>
+    <button class="sidebar-link" data-section-link="teste-fisico" data-permission="interviews_manage"><span class="icon">◉</span>Teste físico</button>
+    <button class="sidebar-link" data-section-link="questoes" data-permission="questions_view"><span class="icon">▤</span>Questionário</button>
+    <button class="sidebar-link" data-section-link="equipe" data-permission="staff_manage"><span class="icon">♟</span>Equipe e permissões</button>
+    <button class="sidebar-link" data-section-link="avisos" data-permission="announcements_manage"><span class="icon">✦</span>Central de avisos</button>
+    <button class="sidebar-link" data-section-link="auditoria" data-permission="audit_view"><span class="icon">⌁</span>Auditoria</button>
+    <button class="sidebar-link" data-section-link="configuracoes" data-permission="settings_manage"><span class="icon">⚙</span>Configurações</button>
+  </nav>
+  <div class="sidebar-bottom"><button class="sidebar-link" data-logout><span class="icon">↪</span>Sair</button></div>
+</aside>
+
+<main class="admin-main">
+  <header class="admin-topbar"><div><span class="eyebrow">CENTRAL DE RECRUTAMENTO</span><h1>Gestão Oficial do Processo Seletivo</h1></div><div class="admin-user"><span class="avatar" data-user-avatar>AD</span><div><strong data-user-name>Usuário</strong><small data-user-role>Cargo</small></div></div></header>
+
+  <section id="visao" class="admin-section active">
+    <div class="stats-grid">
+      <article class="stat-card"><span>Total</span><strong data-total>0</strong><small>inscrições registradas</small></article>
+      <article class="stat-card"><span>Em análise</span><strong data-review>0</strong><small>aguardando decisão</small></article>
+      <article class="stat-card"><span>Aprovados</span><strong data-approved>0</strong><small>próxima etapa</small></article>
+      <article class="stat-card"><span>Reprovados</span><strong data-rejected>0</strong><small>automático ou manual</small></article>
+    </div>
+    <div class="content-grid">
+      <article class="panel-card"><h2>Distribuição das inscrições</h2><p>Visão rápida do funil atual.</p>
+        <div class="bar-list"><div class="bar-row"><header><span>Em análise</span></header><div class="bar"><span data-bar-review></span></div></div><div class="bar-row"><header><span>Aprovados</span></header><div class="bar"><span data-bar-approved></span></div></div><div class="bar-row"><header><span>Reprovados</span></header><div class="bar"><span data-bar-rejected></span></div></div></div>
+      </article>
+      <article class="panel-card"><h2>Ações rápidas</h2><p>Acesse os principais controles.</p><button class="button primary" data-open-candidates>Ver candidatos</button></article>
+    </div>
+  </section>
+
+  <section id="candidatos" class="admin-section">
+    <div class="toolbar"><div><h2>Candidatos</h2><p class="muted">Analise pontuações, respostas e decisões.</p></div><div class="toolbar-group"><input data-search placeholder="Buscar nome, passaporte ou Discord"><select data-filter><option value="all">Todos os status</option><option>Em análise</option><option>Aprovado no teste teórico</option><option>Reprovado automaticamente</option><option>Reprovado no teste teórico</option></select></div></div>
+    <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Passaporte</th><th>Nota</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody data-table></tbody></table></div><div class="empty-state hidden" data-empty>Nenhuma inscrição encontrada.</div></div>
+  </section>
+
+  <section id="questoes" class="admin-section">
+    <div class="question-editor-header">
+      <div><span class="eyebrow">BANCO DE QUESTÕES</span><h2>Configuração do questionário</h2><p class="muted">Crie, edite, organize e defina como cada resposta será avaliada.</p></div>
+      <button class="button primary" type="button" data-new-question data-permission-action="questions_manage">+ Nova questão</button>
+    </div>
+    <div class="question-editor-list" data-question-list></div>
+    <div class="empty-state hidden" data-question-empty>Nenhuma questão cadastrada.</div>
+  </section>
+
+
+
+  <section id="teste-fisico" class="admin-section">
+    <div class="question-editor-header">
+      <div><span class="eyebrow">ETAPA COLETIVA</span><h2>Teste físico</h2><p class="muted">Candidatos aprovados no teste teórico e aguardando convocação coletiva pelo Discord.</p></div>
+    </div>
+    <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Protocolo</th><th>Discord</th><th>Status</th><th>Responsável</th><th></th></tr></thead><tbody data-physical-table></tbody></table></div><div class="empty-state hidden" data-physical-empty>Nenhum candidato aguardando teste físico.</div></div>
+  </section>
+
+  <section id="avisos" class="admin-section">
+    <div class="question-editor-header">
+      <div><span class="eyebrow">COMUNICAÇÃO COLETIVA</span><h2>Central de avisos</h2><p class="muted">Publique comunicados para todos os candidatos de uma etapa específica.</p></div>
+      <button class="button primary" type="button" data-new-announcement>+ Novo aviso</button>
+    </div>
+    <div class="question-editor-list" data-announcement-list></div>
+    <div class="empty-state hidden" data-announcement-empty>Nenhum aviso publicado.</div>
+  </section>
+
+  <section id="equipe" class="admin-section">
+    <div class="question-editor-header">
+      <div><span class="eyebrow">ADMINISTRAÇÃO</span><h2>Equipe e permissões</h2><p class="muted">Gerencie administradores, recrutadores e acessos individuais.</p></div>
+      <button class="button primary" type="button" data-new-staff>+ Adicionar integrante</button>
+    </div>
+    <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Integrante</th><th>Usuário</th><th>Cargo</th><th>Status</th><th>Último acesso</th><th></th></tr></thead><tbody data-staff-table></tbody></table></div></div>
+  </section>
+
+  <section id="auditoria" class="admin-section">
+    <div class="question-editor-header"><div><span class="eyebrow">SEGURANÇA</span><h2>Registro de auditoria</h2><p class="muted">Histórico das principais ações realizadas dentro do painel.</p></div></div>
+    <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Ação</th><th>Recurso</th><th>Data</th></tr></thead><tbody data-audit-table></tbody></table></div><div class="empty-state hidden" data-audit-empty>Nenhum registro de auditoria.</div></div>
+  </section>
+
+  <section id="configuracoes" class="admin-section">
+    <form id="settings-form" class="settings-grid">
+      <article class="setting-card"><h3>Recrutamento</h3><div class="switch-row"><span>Inscrições abertas</span><input type="checkbox" name="recruitmentOpen"></div><label class="field"><span>Nota mínima automática</span><input type="number" name="minimumScore" min="0" max="6"></label></article>
+      <article class="setting-card"><h3>Reinscrição</h3><label class="field"><span>Prazo após reprovação (dias)</span><input type="number" name="retryDays" min="0"></label><div class="switch-row"><span>Mostrar motivo público detalhado</span><input type="checkbox" name="showPublicReason"></div></article>
+      <article class="setting-card"><h3>Manutenção</h3><p>Remove todas as inscrições cadastradas no sistema.</p><button type="button" class="button danger" data-clear-demo>Excluir todas as inscrições</button></article>
+      <article class="setting-card"><h3>Salvar alterações</h3><p>As configurações controlam o funcionamento oficial do processo seletivo.</p><button class="button primary" type="submit">Salvar configurações</button></article>
+    </form>
+  </section>
+</main>
+
+<dialog class="modal" data-question-modal>
+  <button class="modal-close" type="button" data-question-modal-close>×</button>
+  <span class="eyebrow" data-editor-eyebrow>NOVA QUESTÃO</span>
+  <h2 data-editor-title>Configurar questão</h2>
+  <form id="question-editor-form">
+    <input type="hidden" name="id">
+    <div class="editor-grid">
+      <label class="field full"><span>Enunciado da questão</span><textarea name="title" rows="3" required></textarea><small class="error"></small></label>
+      <label class="field full"><span>Descrição ou orientação</span><textarea name="description" rows="2"></textarea><small class="error"></small></label>
+      <label class="field"><span>Categoria</span><input name="category" placeholder="Conduta, Ética, Roleplay..." required><small class="error"></small></label>
+      <label class="field"><span>Tipo</span><select name="type" required><option value="objective">Objetiva com pontuação</option><option value="eliminatory">Eliminatória</option><option value="open">Resposta aberta</option></select><small class="error"></small></label>
+      <label class="field"><span>Pontuação máxima</span><input name="points" type="number" min="0" value="0"><small class="error"></small></label>
+      <label class="field" data-min-length-field><span>Mínimo de caracteres</span><input name="minLength" type="number" min="0" value="50"><small class="error"></small></label>
+      <label class="check-row"><input type="checkbox" name="required" checked> Questão obrigatória</label><span></span>
+      <label class="check-row"><input type="checkbox" name="active" checked> Questão ativa no formulário</label><span></span>
+      <label class="field full" data-manual-criteria-field><span>Critérios para avaliação manual</span><textarea name="manualCriteria" rows="3" placeholder="O que o recrutador deve observar nesta resposta?"></textarea><small class="error"></small></label>
+      <div class="full" data-options-editor>
+        <div class="editor-help">Configure as alternativas e os pontos de cada uma. Em questões eliminatórias, marque quais alternativas eliminam o candidato.</div>
+        <div class="option-editor-list" data-option-list></div>
+        <button class="button secondary small" type="button" data-add-option>+ Adicionar alternativa</button>
+      </div>
+    </div>
+    <div class="editor-footer">
+      <button class="button danger" type="button" data-delete-current>Excluir questão</button>
+      <div><button class="button secondary" type="button" data-question-cancel>Cancelar</button> <button class="button primary" type="submit">Salvar questão</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="modal" data-staff-modal>
+  <button class="modal-close" type="button" data-staff-modal-close>×</button>
+  <span class="eyebrow">EQUIPE INTERNA</span>
+  <h2 data-staff-modal-title>Adicionar integrante</h2>
+  <form id="staff-form">
+    <input type="hidden" name="id">
+    <div class="editor-grid">
+      <label class="field"><span>Nome</span><input name="name" required><small class="error"></small></label>
+      <label class="field"><span>Nome de usuário</span><input name="username" required><small class="error"></small></label>
+      <label class="field"><span>E-mail</span><input name="email" type="email" required><small class="error"></small></label>
+      <label class="field"><span>Discord</span><input name="discord" required><small class="error"></small></label>
+      <label class="field"><span>Cargo</span><select name="role"><option value="recruiter">Recrutador</option><option value="supervisor">Supervisor</option><option value="admin">Administrador</option></select></label>
+      <label class="field"><span>Senha</span><input name="password" type="text" required><small class="error"></small></label>
+      <label class="check-row"><input type="checkbox" name="active" checked> Acesso ativo</label><span></span>
+      <div class="full">
+        <h3>Permissões específicas</h3>
+        <div class="permission-grid" data-permission-grid></div>
+      </div>
+    </div>
+    <div class="editor-footer">
+      <button class="button danger hidden" type="button" data-delete-staff>Remover integrante</button>
+      <div><button class="button secondary" type="button" data-staff-cancel>Cancelar</button> <button class="button primary" type="submit">Salvar integrante</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="modal access-denied-modal" data-access-denied>
+  <span class="eyebrow">ACESSO NEGADO</span>
+  <h2>Você não possui permissão para esta área.</h2>
+  <p class="muted">Seu cargo não permite visualizar ou alterar este conteúdo.</p>
+  <button class="button primary" type="button" data-close-access-denied>Voltar ao painel</button>
+</dialog>
+
+
+<dialog class="modal" data-announcement-modal>
+  <button class="modal-close" type="button" data-announcement-close>×</button>
+  <span class="eyebrow">COMUNICADO COLETIVO</span>
+  <h2 data-announcement-title>Novo aviso</h2>
+  <form id="announcement-form">
+    <input type="hidden" name="id">
+    <div class="editor-grid">
+      <label class="field full"><span>Título</span><input name="title" required><small class="error"></small></label>
+      <label class="field full"><span>Mensagem</span><textarea name="message" rows="6" required></textarea><small class="error"></small></label>
+      <label class="field"><span>Público do aviso</span>
+        <select name="audienceStatus">
+          <option value="Aprovado no teste teórico">Aprovados no teste teórico</option>
+          <option value="Aprovado no teste físico">Aprovados no teste físico</option>
+          <option value="Curso de formação">Curso de formação</option>
+          <option value="Todos">Todos os candidatos</option>
+        </select>
+      </label>
+      <label class="check-row"><input type="checkbox" name="active" checked> Aviso ativo</label>
+    </div>
+    <div class="editor-footer">
+      <button class="button danger hidden" type="button" data-delete-announcement>Excluir aviso</button>
+      <div><button class="button secondary" type="button" data-announcement-cancel>Cancelar</button> <button class="button primary" type="submit">Salvar aviso</button></div>
+    </div>
+  </form>
+</dialog>
+
+</body></html>

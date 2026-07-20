@@ -1,0 +1,43 @@
+
+.hero{
+  min-height:620px;display:grid;grid-template-columns:1.2fr .8fr;gap:70px;align-items:center;padding:70px 0
+}
+.hero h1{font-size:clamp(3.6rem,7vw,7rem);line-height:.92;letter-spacing:-.075em;margin:16px 0 20px;max-width:850px}
+.hero p{font-size:1.06rem;line-height:1.8;color:var(--muted);max-width:700px}
+.hero-actions{display:flex;gap:12px;margin-top:30px}
+.hero-panel{padding:28px;position:relative;overflow:hidden}
+.hero-panel::after{content:"";position:absolute;right:-80px;bottom:-80px;width:220px;height:220px;border-radius:50%;background:rgba(212,176,70,.10)}
+.hero-panel-top{display:flex;align-items:center;gap:12px}
+.live-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.hero-panel ul{list-style:none;padding:20px 0 0;margin:22px 0 0;border-top:1px solid var(--line)}
+.hero-panel li{padding:10px 0;color:var(--muted)}
+.hero-panel li:before{content:"✓";color:var(--green);margin-right:10px}
+.timeline-section,.feature-section{padding:90px 0}
+.timeline-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:35px}
+.timeline-card{padding:20px;min-height:200px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.025);transition:.2s ease}
+.timeline-card:hover{transform:translateY(-5px);border-color:rgba(212,176,70,.35)}
+.timeline-card b{color:var(--green);font-size:.78rem}
+.timeline-card h3{margin:34px 0 10px}
+.timeline-card p{margin:0;color:var(--muted);font-size:.88rem;line-height:1.6}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:32px}
+.feature-card{padding:24px}
+.feature-card span{font-size:1.7rem}
+.feature-card h3{margin:18px 0 8px}
+.feature-card p{color:var(--muted);line-height:1.65;margin:0}
+.cta{margin-top:80px;padding:38px;display:flex;justify-content:space-between;gap:30px;align-items:center}
+.cta h2{font-size:clamp(2rem,4vw,3.3rem);letter-spacing:-.04em;margin:10px 0}
+@media(max-width:950px){
+  .hero{grid-template-columns:1fr;min-height:auto}.hero-panel{max-width:600px}
+  .timeline-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:650px){
+  .hero h1{font-size:3.5rem}.hero-actions,.cta{flex-direction:column;align-items:stretch}
+  .timeline-grid,.feature-grid{grid-template-columns:1fr}
+}
+
+.hero{position:relative}
+.hero::before{content:"";position:absolute;top:4%;right:2%;width:430px;height:430px;background:url("../assets/images/logo-policia-penal-ceara.png") center/contain no-repeat;opacity:.035;pointer-events:none}
+.hero h1{background:linear-gradient(180deg,#fff8dc,#d4b046);-webkit-background-clip:text;background-clip:text;color:transparent}
+.timeline-card b,.feature-card span{color:var(--gold)}
+.hero-panel{border-color:rgba(212,176,70,.22)}
+.live-dot{background:var(--green-2)}

@@ -1,0 +1,60 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recrutamento | Polícia Penal</title>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
+
+<link rel="stylesheet" href="css/forms.css">
+<script defer src="js/storage.js"></script><script defer src="js/app.js"></script><script defer src="js/recrutamento.js"></script></head><body>
+
+<header class="public-header">
+  <a class="brand" href="index.html">
+    <span class="brand-mark"><img class="brand-logo-image" src="assets/images/logo-policia-penal-ceara.png" alt="Logo Polícia Penal Ceará"></span>
+    <span class="brand-copy"><strong>Polícia Penal Ceará</strong><small>Portal de Recrutamento</small></span>
+  </a>
+  <nav class="public-nav">
+    <a href="index.html#processo">Processo seletivo</a>
+    <a href="recrutamento.html">Inscrição</a>
+    <a href="status.html">Consultar status</a>
+  </nav>
+  <button class="mobile-menu" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+</header>
+<nav class="mobile-nav">
+  <a href="index.html#processo">Processo seletivo</a>
+  <a href="recrutamento.html">Inscrição</a>
+  <a href="status.html">Consultar status</a>
+</nav>
+
+<main class="container form-page">
+  <section class="form-shell card" data-form-shell>
+    <header class="form-header"><div><span class="eyebrow">INSCRIÇÃO OFICIAL</span><h1>Recrutamento da Polícia Penal</h1><p>Responda com seriedade. O formulário possui perguntas eliminatórias e respostas analisadas manualmente.</p></div><div class="step-count" data-step-count>1 / 5</div></header>
+    <div class="progress"><span data-progress></span></div>
+    <form id="recruitment-form" class="form-content" novalidate>
+      <section class="form-step active">
+        <div class="step-heading"><span class="eyebrow">ETAPA 1</span><h2>Identificação</h2><p>Dados utilizados dentro da cidade.</p></div>
+        <div class="field-grid">
+          <label class="field"><span>Nome do personagem</span><input name="characterName" required minlength="3"><small class="error"></small></label>
+          <label class="field"><span>Passaporte / ID</span><input name="passport" required><small class="error"></small></label>
+          <label class="field"><span>Discord</span><input name="discord" required><small class="error"></small></label>
+          <label class="field"><span>Idade do personagem</span><input name="characterAge" type="number" min="18" required><small class="error"></small></label>
+          <label class="field"><span>Tempo de cidade</span><input name="cityTime" placeholder="Ex.: 6 meses" required><small class="error"></small></label>
+          <label class="field"><span>Disponibilidade</span><input name="availability" placeholder="Ex.: 19h às 23h" required><small class="error"></small></label>
+          <label class="field full"><span>Experiência anterior</span><textarea name="experience" rows="4" placeholder="Descreva experiências em corporações, organizações ou informe que não possui."></textarea><small class="error"></small></label>
+        </div>
+      </section>
+      <div data-dynamic-questions></div>
+      <section class="form-step">
+        <div class="step-heading"><span class="eyebrow">ETAPA FINAL</span><h2>Revisão e envio</h2><p>Confira os dados antes de finalizar.</p></div>
+        <div class="review-grid" data-review></div>
+        <label class="check-row"><input type="checkbox" name="rules" required> Declaro que li as regras e que todas as informações são verdadeiras.</label><small class="error"></small>
+        <label class="check-row"><input type="checkbox" name="data" required> Autorizo o uso destes dados exclusivamente no processo seletivo do servidor.</label><small class="error"></small>
+      </section>
+      <div class="form-actions"><button class="button secondary" type="button" data-prev disabled>Voltar</button><button class="button primary" type="button" data-next>Continuar</button><button class="button primary hidden" type="submit" data-submit>Enviar inscrição</button></div>
+    </form>
+  </section>
+</main>
+<dialog id="success-modal" class="modal"><button class="modal-close" data-close-modal>×</button><span class="eyebrow">INSCRIÇÃO REGISTRADA</span><h2>Questionário enviado com sucesso</h2><p class="muted">Guarde o protocolo abaixo para acompanhar sua situação.</p><h1 data-protocol></h1><a class="button primary" href="status.html">Consultar status</a></dialog>
+<footer class="page-footer"><span>Polícia Penal Ceará — GTA RP</span><span>Processo seletivo</span></footer>
+</body></html>

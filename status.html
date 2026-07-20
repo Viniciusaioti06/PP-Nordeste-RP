@@ -1,0 +1,44 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Consultar Status | Polícia Penal</title>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/animations.css">
+
+<link rel="stylesheet" href="css/forms.css">
+<script defer src="js/storage.js"></script><script defer src="js/app.js"></script><script defer src="js/status.js"></script></head><body>
+
+<header class="public-header">
+  <a class="brand" href="index.html">
+    <span class="brand-mark"><img class="brand-logo-image" src="assets/images/logo-policia-penal-ceara.png" alt="Logo Polícia Penal Ceará"></span>
+    <span class="brand-copy"><strong>Polícia Penal Ceará</strong><small>Portal de Recrutamento</small></span>
+  </a>
+  <nav class="public-nav">
+    <a href="index.html#processo">Processo seletivo</a>
+    <a href="recrutamento.html">Inscrição</a>
+    <a href="status.html">Consultar status</a>
+  </nav>
+  <button class="mobile-menu" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+</header>
+<nav class="mobile-nav">
+  <a href="index.html#processo">Processo seletivo</a>
+  <a href="recrutamento.html">Inscrição</a>
+  <a href="status.html">Consultar status</a>
+</nav>
+
+<main class="container lookup-layout">
+  <section class="lookup-card card">
+    <span class="eyebrow">ACOMPANHAMENTO</span><h1>Consulte sua inscrição.</h1><p>Use o protocolo recebido no envio e o passaporte informado no cadastro.</p>
+    <form id="status-form"><label class="field"><span>Protocolo</span><input name="protocol" placeholder="PP-2026-0001" required><small class="error"></small></label>
+    <label class="field"><span>Passaporte / ID</span><input name="passport" required><small class="error"></small></label>
+    <button class="button primary" type="submit">Consultar situação</button></form>
+  </section>
+  <section class="lookup-result card hidden" data-result>
+    <div class="result-top"><div><span class="eyebrow">RESULTADO</span><h2 data-name></h2></div><span class="status-pill" data-status></span></div>
+    <div class="result-data"><div><span>Protocolo</span><strong data-protocol></strong></div><div><span>Passaporte</span><strong data-passport></strong></div><div><span>Enviado em</span><strong data-created></strong></div><div><span>Última atualização</span><strong data-updated></strong></div></div>
+    <div class="status-timeline" data-timeline></div>
+    <p class="muted" data-note></p>
+    <a class="button secondary" href="candidato/dashboard.html">Abrir área do candidato</a>
+  </section>
+</main></body></html>
