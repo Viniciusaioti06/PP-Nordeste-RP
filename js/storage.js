@@ -1,346 +1,471 @@
 
 const PPStore = (() => {
-  const APP_KEY = "pp_v2_applications";
-  const SESSION_KEY = "pp_v2_admin_session";
-  const CANDIDATE_KEY = "pp_v2_candidate_session";
-  const SETTINGS_KEY = "pp_v2_settings";
-  const QUESTIONS_KEY = "pp_v2_questions";
-  const USERS_KEY = "pp_v4_staff_users";
-  const AUDIT_KEY = "pp_v4_audit_logs";
-  const CURRENT_USER_KEY = "pp_v4_current_staff";
-  const ANNOUNCEMENTS_KEY = "pp_v5_announcements";
-
-  const readJSON = (key, fallback=[]) => {
-    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+  const cache = {
+    applications: [],
+    questions: [],
+    settings: {
+      recruitmentOpen: true,
+      minimumScore: 4,
+      retryDays: 7,
+      showPublicReason: false
+    },
+    users: [],
+    announcements: [],
+    auditLogs: [],
+    currentUser: null
   };
-  const writeJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
-
 
   const defaultPermissions = {
-    recruiter:{dashboard_view:true,candidates_view:true,candidates_review:true,candidates_approve:true,candidates_reject:true,interviews_manage:true,questions_view:true,questions_manage:false,settings_manage:false,staff_manage:false,audit_view:false,applications_delete:false,announcements_manage:false},
-    supervisor:{dashboard_view:true,candidates_view:true,candidates_review:true,candidates_approve:true,candidates_reject:true,interviews_manage:true,questions_view:true,questions_manage:true,settings_manage:false,staff_manage:false,audit_view:true,applications_delete:false,announcements_manage:true},
-    admin:{dashboard_view:true,candidates_view:true,candidates_review:true,candidates_approve:true,candidates_reject:true,interviews_manage:true,questions_view:true,questions_manage:true,settings_manage:true,staff_manage:true,audit_view:true,applications_delete:true,announcements_manage:true}
+    recruiter: {
+      dashboard_view:true,candidates_view:true,candidates_review:true,
+      candidates_approve:true,candidates_reject:true,interviews_manage:true,
+      questions_view:true,questions_manage:false,settings_manage:false,
+      staff_manage:false,audit_view:false,applications_delete:false,
+      announcements_manage:false
+    },
+    supervisor: {
+      dashboard_view:true,candidates_view:true,candidates_review:true,
+      candidates_approve:true,candidates_reject:true,interviews_manage:true,
+      questions_view:true,questions_manage:true,settings_manage:false,
+      staff_manage:false,audit_view:true,applications_delete:false,
+      announcements_manage:true
+    },
+    admin: {
+      dashboard_view:true,candidates_view:true,candidates_review:true,
+      candidates_approve:true,candidates_reject:true,interviews_manage:true,
+      questions_view:true,questions_manage:true,settings_manage:true,
+      staff_manage:true,audit_view:true,applications_delete:true,
+      announcements_manage:true
+    }
   };
 
-  const seedUsers = () => {
-    const current=readJSON(USERS_KEY,null);
-    if(Array.isArray(current)) return current;
-    writeJSON(USERS_KEY,[]);
-    return [];
+  const assertConfigured = () => {
+    if (!window.SUPABASE_CONFIGURED || !window.supabaseClient) {
+      throw new Error("Supabase não configurado. Preencha supabase/config.js.");
+    }
   };
 
-  const needsInitialSetup = () => users().length===0;
+  const camelApplication = row => ({
+    id: row.id,
+    userId: row.user_id,
+    protocol: row.protocol,
+    characterName: row.character_name,
+    passport: row.passport,
+    discord: row.discord,
+    characterAge: row.character_age,
+    cityTime: row.city_time,
+    availability: row.availability,
+    experience: row.experience,
+    answers: row.answers || {},
+    autoScore: row.automatic_score || 0,
+    manualScore: row.manual_score,
+    maxAutoScore: row.maximum_automatic_score || 0,
+    status: row.status,
+    publicNote: row.public_note || "",
+    reviewerNotes: row.reviewer_notes || "",
+    reviewerId: row.reviewer_id,
+    physicalRecruiter: row.physical_recruiter || "",
+    eliminatory: !!row.eliminatory_triggered,
+    questionSnapshot: row.question_snapshot || [],
+    timeline: row.timeline || [],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  });
 
-  const createInitialAdmin = data => {
-    if(!needsInitialSetup()) return {ok:false,reason:"already_configured"};
-    const now=new Date().toISOString();
-    const user={id:`staff-${Date.now()}-${Math.random().toString(16).slice(2)}`,name:data.name.trim(),username:data.username.trim(),email:data.email.trim(),discord:data.discord.trim(),password:data.password,role:"admin",active:true,permissions:{...defaultPermissions.admin},lastLogin:null,createdAt:now,updatedAt:now};
-    saveUsers([user]);
-    addAudit("initial_admin_created","staff",user.id,null,{...user,password:"***"},user);
-    return {ok:true,user};
+  const dbApplication = app => ({
+    protocol: app.protocol,
+    character_name: app.characterName,
+    passport: app.passport,
+    discord: app.discord,
+    character_age: app.characterAge,
+    city_time: app.cityTime,
+    availability: app.availability,
+    experience: app.experience,
+    answers: app.answers || {},
+    automatic_score: app.autoScore || 0,
+    manual_score: app.manualScore,
+    maximum_automatic_score: app.maxAutoScore || 0,
+    status: app.status,
+    public_note: app.publicNote || "",
+    reviewer_notes: app.reviewerNotes || "",
+    physical_recruiter: app.physicalRecruiter || "",
+    eliminatory_triggered: !!app.eliminatory,
+    question_snapshot: app.questionSnapshot || [],
+    timeline: app.timeline || []
+  });
+
+  const camelQuestion = row => ({
+    id: row.id,
+    title: row.title,
+    description: row.description || "",
+    category: row.category,
+    type: row.question_type,
+    required: row.required,
+    active: row.active,
+    order: row.order_position,
+    points: row.points,
+    options: row.options || [],
+    correctOption: row.correct_option || "",
+    eliminatoryOptions: row.eliminatory_options || [],
+    minLength: row.min_length || 0,
+    manualCriteria: row.manual_criteria || ""
+  });
+
+  const dbQuestion = q => ({
+    id: q.id,
+    title: q.title,
+    description: q.description || "",
+    category: q.category || "Geral",
+    question_type: q.type,
+    required: q.required !== false,
+    active: q.active !== false,
+    order_position: q.order,
+    points: Number(q.points || 0),
+    options: q.options || [],
+    correct_option: q.correctOption || null,
+    eliminatory_options: q.eliminatoryOptions || [],
+    min_length: Number(q.minLength || 0),
+    manual_criteria: q.manualCriteria || ""
+  });
+
+  const camelProfile = row => ({
+    id: row.id,
+    name: row.display_name || row.email || "Usuário",
+    username: row.username || "",
+    email: row.email || "",
+    discord: row.discord || "",
+    role: row.role,
+    active: row.active,
+    permissions: row.permissions || defaultPermissions[row.role] || {},
+    lastLogin: row.last_login,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  });
+
+  const camelAnnouncement = row => ({
+    id: row.id,
+    title: row.title,
+    message: row.message,
+    audienceStatus: row.audience_status,
+    active: row.active,
+    createdBy: row.created_by_name || "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  });
+
+  const camelAudit = row => ({
+    id: row.id,
+    actorId: row.actor_id,
+    actorName: row.actor_name || "Sistema",
+    actorRole: row.actor_role || "system",
+    action: row.action,
+    resourceType: row.resource_type,
+    resourceId: row.resource_id,
+    oldData: row.old_data,
+    newData: row.new_data,
+    createdAt: row.created_at
+  });
+
+  const initializePublic = async () => {
+    assertConfigured();
+    const [{ data: questions, error: qe }, { data: settings, error: se }] = await Promise.all([
+      supabaseClient.from("recruitment_questions").select("*").eq("active", true).order("order_position"),
+      supabaseClient.from("recruitment_settings").select("*").eq("id", 1).maybeSingle()
+    ]);
+    if (qe) throw qe;
+    if (se) throw se;
+    cache.questions = (questions || []).map(camelQuestion);
+    if (settings) {
+      cache.settings = {
+        recruitmentOpen: settings.recruitment_open,
+        minimumScore: settings.minimum_score,
+        retryDays: settings.retry_days,
+        showPublicReason: settings.show_public_reason
+      };
+    }
   };
 
-  const users = () => readJSON(USERS_KEY, []);
-  const saveUsers = value => writeJSON(USERS_KEY, value);
+  const initializeStaff = async () => {
+    assertConfigured();
+    const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !authData?.user) {
+      cache.currentUser = null;
+      return false;
+    }
 
-  const currentUser = () => {
-    const id = sessionStorage.getItem(CURRENT_USER_KEY);
-    return users().find(user => user.id === id) || null;
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles").select("*").eq("id", authData.user.id).single();
+    if (profileError) throw profileError;
+    cache.currentUser = camelProfile(profile);
+    if (!cache.currentUser.active) {
+      await supabaseClient.auth.signOut();
+      cache.currentUser = null;
+      return false;
+    }
+
+    const tasks = [
+      supabaseClient.from("recruitment_applications").select("*").order("created_at", {ascending:false}),
+      supabaseClient.from("recruitment_questions").select("*").order("order_position"),
+      supabaseClient.from("recruitment_settings").select("*").eq("id",1).maybeSingle(),
+      supabaseClient.from("announcements").select("*").order("created_at",{ascending:false})
+    ];
+
+    if (cache.currentUser.permissions.staff_manage) {
+      tasks.push(supabaseClient.from("profiles").select("*").order("created_at"));
+    } else tasks.push(Promise.resolve({data:[],error:null}));
+
+    if (cache.currentUser.permissions.audit_view) {
+      tasks.push(supabaseClient.from("audit_logs").select("*").order("created_at",{ascending:false}).limit(500));
+    } else tasks.push(Promise.resolve({data:[],error:null}));
+
+    const [apps, questions, settings, announcements, users, audits] = await Promise.all(tasks);
+    for (const result of [apps,questions,settings,announcements,users,audits]) {
+      if (result.error) throw result.error;
+    }
+
+    cache.applications = (apps.data || []).map(camelApplication);
+    cache.questions = (questions.data || []).map(camelQuestion);
+    cache.announcements = (announcements.data || []).map(camelAnnouncement);
+    cache.users = (users.data || []).map(camelProfile);
+    cache.auditLogs = (audits.data || []).map(camelAudit);
+    if (settings.data) {
+      cache.settings = {
+        recruitmentOpen: settings.data.recruitment_open,
+        minimumScore: settings.data.minimum_score,
+        retryDays: settings.data.retry_days,
+        showPublicReason: settings.data.show_public_reason
+      };
+    }
+    return true;
   };
 
-  const loginStaff = (username, password) => {
-    const list = users();
-    const index = list.findIndex(user =>
-      user.username.toLowerCase() === String(username).trim().toLowerCase() &&
-      user.password === password
-    );
-    if (index < 0) return {ok:false, reason:"invalid"};
-    if (!list[index].active) return {ok:false, reason:"inactive"};
-    list[index].lastLogin = new Date().toISOString();
-    list[index].updatedAt = new Date().toISOString();
-    saveUsers(list);
-    sessionStorage.setItem(CURRENT_USER_KEY, list[index].id);
-    sessionStorage.setItem(SESSION_KEY, "1");
-    addAudit("login", "staff", list[index].id, null, {username:list[index].username}, list[index]);
-    return {ok:true, user:list[index]};
+  const applications = () => cache.applications;
+  const questions = () => cache.questions;
+  const settings = () => cache.settings;
+  const users = () => cache.users;
+  const announcements = () => cache.announcements;
+  const auditLogs = () => cache.auditLogs;
+  const currentUser = () => cache.currentUser;
+
+  const hasAdminSession = () => !!cache.currentUser;
+  const hasPermission = permission => !!cache.currentUser?.active && !!cache.currentUser.permissions?.[permission];
+
+  const loginStaff = async (email, password) => {
+    assertConfigured();
+    const { data, error } = await supabaseClient.auth.signInWithPassword({email, password});
+    if (error) return {ok:false, reason:"invalid", error};
+    const ok = await initializeStaff();
+    if (!ok) return {ok:false, reason:"inactive"};
+    await addAudit("login","staff",data.user.id,null,{email});
+    return {ok:true,user:cache.currentUser};
   };
 
-  const logoutStaff = () => {
-    sessionStorage.removeItem(CURRENT_USER_KEY);
-    sessionStorage.removeItem(SESSION_KEY);
+  const logoutStaff = async () => {
+    if (window.supabaseClient) await supabaseClient.auth.signOut();
+    cache.currentUser = null;
   };
 
-  const hasPermission = permission => {
-    const user = currentUser();
-    return !!(user && user.active && user.permissions?.[permission]);
+  const needsInitialSetup = async () => {
+    assertConfigured();
+    const { data, error } = await supabaseClient.rpc("needs_initial_admin");
+    if (error) throw error;
+    return !!data;
   };
 
-  const requirePermission = permission => {
-    if (!currentUser()) return {allowed:false, reason:"unauthenticated"};
-    if (!hasPermission(permission)) return {allowed:false, reason:"forbidden"};
-    return {allowed:true};
-  };
-
-  const addAudit = (action, resourceType, resourceId, oldData=null, newData=null, actorOverride=null) => {
-    const actor = actorOverride || currentUser();
-    const logs = readJSON(AUDIT_KEY, []);
-    logs.unshift({
-      id: `audit-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      actorId: actor?.id || null,
-      actorName: actor?.name || "Sistema",
-      actorRole: actor?.role || "system",
-      action,
-      resourceType,
-      resourceId,
-      oldData,
-      newData,
-      createdAt: new Date().toISOString()
+  const createInitialAdmin = async data => {
+    assertConfigured();
+    const { data: signup, error: signupError } = await supabaseClient.auth.signUp({
+      email:data.email,
+      password:data.password,
+      options:{data:{display_name:data.name,username:data.username,discord:data.discord}}
     });
-    writeJSON(AUDIT_KEY, logs.slice(0, 500));
+    if (signupError) return {ok:false,reason:"signup",error:signupError};
+    if (!signup.user) return {ok:false,reason:"email_confirmation"};
+
+    const { data: result, error } = await supabaseClient.rpc("bootstrap_first_admin", {
+      p_display_name:data.name,
+      p_username:data.username,
+      p_discord:data.discord
+    });
+    if (error) return {ok:false,reason:"bootstrap",error};
+    return {ok:!!result,user:signup.user};
   };
 
-  const auditLogs = () => readJSON(AUDIT_KEY, []);
+  const generateProtocol = () => {
+    const year = new Date().getFullYear();
+    const random = crypto.getRandomValues(new Uint32Array(1))[0].toString().slice(-6);
+    return `PP-${year}-${random.padStart(6,"0")}`;
+  };
 
-  const createStaffUser = data => {
-    const list = users();
-    const now = new Date().toISOString();
-    const role = ["admin","supervisor","recruiter"].includes(data.role) ? data.role : "recruiter";
-    const user = {
-      id: `staff-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      name: data.name.trim(),
-      username: data.username.trim(),
-      email: data.email.trim(),
-      discord: data.discord.trim(),
-      password: data.password,
-      role,
-      active: data.active !== false,
-      permissions: {...defaultPermissions[role], ...(data.permissions || {})},
-      lastLogin: null,
-      createdAt: now,
-      updatedAt: now
+  const createApplication = async app => {
+    assertConfigured();
+    const payload = dbApplication(app);
+    const { data, error } = await supabaseClient.rpc("submit_recruitment_application", {
+      p_application: payload
+    });
+    if (error) throw error;
+    const created = camelApplication(data);
+    cache.applications.unshift(created);
+    return created;
+  };
+
+  const findByProtocol = async (protocol, passport) => {
+    assertConfigured();
+    const { data, error } = await supabaseClient.rpc("lookup_recruitment_application", {
+      p_protocol: String(protocol).trim(),
+      p_passport: String(passport).trim()
+    });
+    if (error) throw error;
+    return data ? camelApplication(data) : null;
+  };
+
+  const updateApplication = async (id, patch) => {
+    assertConfigured();
+    const current = cache.applications.find(a=>a.id===id);
+    if (!current) return null;
+    const merged = {...current,...patch};
+    const { data, error } = await supabaseClient
+      .from("recruitment_applications")
+      .update(dbApplication(merged))
+      .eq("id",id).select().single();
+    if (error) throw error;
+    const updated = camelApplication(data);
+    const index = cache.applications.findIndex(a=>a.id===id);
+    cache.applications[index] = updated;
+    return updated;
+  };
+
+  const saveQuestions = async list => {
+    assertConfigured();
+    const payload = list.map(dbQuestion);
+    const { error } = await supabaseClient.from("recruitment_questions").upsert(payload);
+    if (error) throw error;
+    cache.questions = list;
+  };
+
+  const deleteQuestion = async id => {
+    const { error } = await supabaseClient.from("recruitment_questions").delete().eq("id",id);
+    if (error) throw error;
+    cache.questions = cache.questions.filter(q=>q.id!==id);
+  };
+
+  const saveSettings = async value => {
+    const payload = {
+      id:1,
+      recruitment_open:value.recruitmentOpen,
+      minimum_score:value.minimumScore,
+      retry_days:value.retryDays,
+      show_public_reason:value.showPublicReason,
+      updated_at:new Date().toISOString()
     };
-    list.push(user);
-    saveUsers(list);
-    addAudit("staff_created", "staff", user.id, null, {...user, password:"***"});
-    return user;
+    const { error } = await supabaseClient.from("recruitment_settings").upsert(payload);
+    if (error) throw error;
+    cache.settings = value;
   };
 
-  const updateStaffUser = (id, patch) => {
-    const list = users();
-    const index = list.findIndex(user => user.id === id);
-    if (index < 0) return null;
-    const oldData = {...list[index], password:"***"};
-    const nextRole = patch.role || list[index].role;
-    list[index] = {
-      ...list[index],
-      ...patch,
-      permissions: patch.permissions || list[index].permissions || {...defaultPermissions[nextRole]},
-      updatedAt: new Date().toISOString()
+  const createAnnouncement = async data => {
+    const payload = {
+      title:data.title.trim(),message:data.message.trim(),
+      audience_status:data.audienceStatus,active:data.active!==false,
+      created_by:cache.currentUser.id
     };
-    saveUsers(list);
-    addAudit("staff_updated", "staff", id, oldData, {...list[index], password:"***"});
-    return list[index];
-  };
-
-  const deleteStaffUser = id => {
-    const actor = currentUser();
-    if (actor?.id === id) return {ok:false, reason:"self"};
-    const list = users();
-    const target = list.find(user => user.id === id);
-    if (!target) return {ok:false, reason:"missing"};
-    saveUsers(list.filter(user => user.id !== id));
-    addAudit("staff_deleted", "staff", id, {...target, password:"***"}, null);
-    return {ok:true};
-  };
-
-
-  const seedAnnouncements = () => {
-    const current = readJSON(ANNOUNCEMENTS_KEY, null);
-    if (Array.isArray(current)) return current;
-    writeJSON(ANNOUNCEMENTS_KEY, []);
-    return [];
-  };
-
-  const announcements = () => readJSON(ANNOUNCEMENTS_KEY, []);
-  const saveAnnouncements = value => writeJSON(ANNOUNCEMENTS_KEY, value);
-
-  const createAnnouncement = data => {
-    const list = announcements();
-    const now = new Date().toISOString();
-    const item = {
-      id: `announcement-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      title: data.title.trim(),
-      message: data.message.trim(),
-      audienceStatus: data.audienceStatus || "Aprovado no teste teórico",
-      active: data.active !== false,
-      createdBy: currentUser()?.name || "Administrador",
-      createdAt: now,
-      updatedAt: now
-    };
-    list.unshift(item);
-    saveAnnouncements(list);
-    addAudit("announcement_created", "announcement", item.id, null, item);
+    const { data: row, error } = await supabaseClient.from("announcements").insert(payload).select().single();
+    if (error) throw error;
+    const item = camelAnnouncement({...row,created_by_name:cache.currentUser.name});
+    cache.announcements.unshift(item);
     return item;
   };
 
-  const updateAnnouncement = (id, patch) => {
-    const list = announcements();
-    const index = list.findIndex(item => item.id === id);
-    if (index < 0) return null;
-    const oldData = {...list[index]};
-    list[index] = {...list[index], ...patch, updatedAt: new Date().toISOString()};
-    saveAnnouncements(list);
-    addAudit("announcement_updated", "announcement", id, oldData, list[index]);
-    return list[index];
+  const updateAnnouncement = async (id, patch) => {
+    const payload = {
+      title:patch.title,message:patch.message,
+      audience_status:patch.audienceStatus,active:patch.active,
+      updated_at:new Date().toISOString()
+    };
+    const { data, error } = await supabaseClient.from("announcements").update(payload).eq("id",id).select().single();
+    if (error) throw error;
+    const item = camelAnnouncement({...data,created_by_name:cache.currentUser.name});
+    const index=cache.announcements.findIndex(a=>a.id===id);
+    cache.announcements[index]=item;
+    return item;
   };
 
-  const deleteAnnouncement = id => {
-    const list = announcements();
-    const target = list.find(item => item.id === id);
-    if (!target) return false;
-    saveAnnouncements(list.filter(item => item.id !== id));
-    addAudit("announcement_deleted", "announcement", id, target, null);
+  const deleteAnnouncement = async id => {
+    const { error } = await supabaseClient.from("announcements").delete().eq("id",id);
+    if (error) throw error;
+    cache.announcements=cache.announcements.filter(a=>a.id!==id);
     return true;
   };
 
   const announcementsForStatus = status =>
-    announcements().filter(item => item.active && item.audienceStatus === status);
+    cache.announcements.filter(item=>item.active&&(item.audienceStatus===status||item.audienceStatus==="Todos"));
 
-  const seedQuestions = () => {
-    const current = readJSON(QUESTIONS_KEY, null);
-    if (Array.isArray(current) && current.length) {
-      // Migra questões antigas para o novo formato sem apagar os dados existentes.
-      const migrated = current.map((q, index) => ({
-        id: q.id || `q-${Date.now()}-${index}`,
-        title: q.title || "Pergunta sem título",
-        description: q.description || "",
-        category: q.category || "Geral",
-        type: q.type || "open",
-        required: q.required !== false,
-        active: q.active !== false,
-        order: Number.isFinite(q.order) ? q.order : index + 1,
-        points: Number(q.points || 0),
-        options: Array.isArray(q.options) ? q.options : [],
-        correctOption: q.correctOption ?? "",
-        eliminatoryOptions: Array.isArray(q.eliminatoryOptions) ? q.eliminatoryOptions : [],
-        minLength: Number(q.minLength || 0),
-        manualCriteria: q.manualCriteria || ""
-      }));
-      writeJSON(QUESTIONS_KEY, migrated);
-      return migrated;
-    }
-
-    const seed = [
-      {
-        id:"provocation", title:"Um detento começa a provocar verbalmente um agente. Como você reage?",
-        description:"Avalia postura, maturidade e respeito aos procedimentos.",
-        category:"Conduta", type:"objective", required:true, active:true, order:1, points:3,
-        options:[
-          {id:"p1",label:"Mantenho a postura e sigo o procedimento adequado.",points:3},
-          {id:"p2",label:"Respondo no mesmo tom para impor respeito.",points:1},
-          {id:"p3",label:"Uso força imediatamente.",points:0}
-        ],
-        correctOption:"p1", eliminatoryOptions:[], minLength:0, manualCriteria:""
-      },
-      {
-        id:"hierarchy", title:"Você recebe uma ordem que considera equivocada, mas que não viola nenhuma regra.",
-        description:"Avalia respeito à hierarquia e uso dos canais internos.",
-        category:"Hierarquia", type:"objective", required:true, active:true, order:2, points:3,
-        options:[
-          {id:"h1",label:"Cumpro e depois converso pelo canal correto.",points:3},
-          {id:"h2",label:"Discuto publicamente com o superior.",points:1},
-          {id:"h3",label:"Ignoro e faço do meu jeito.",points:0}
-        ],
-        correctOption:"h1", eliminatoryOptions:[], minLength:0, manualCriteria:""
-      },
-      {
-        id:"corruption", title:"Você aceitaria dinheiro ou favores para facilitar a fuga de um preso?",
-        description:"Pergunta eliminatória relacionada à ética e corrupção.",
-        category:"Ética", type:"eliminatory", required:true, active:true, order:3, points:0,
-        options:[
-          {id:"c1",label:"Não, em nenhuma hipótese.",points:0},
-          {id:"c2",label:"Talvez, dependendo da situação.",points:0},
-          {id:"c3",label:"Sim, caso a recompensa fosse boa.",points:0}
-        ],
-        correctOption:"c1", eliminatoryOptions:["c2","c3"], minLength:0, manualCriteria:""
-      },
-      {
-        id:"escape", title:"Durante uma transferência, um preso tenta fugir e outro agente começa a atirar sem autorização. Como você reage?",
-        description:"Descreva a conduta adotada e os procedimentos que seguiria.",
-        category:"Roleplay", type:"open", required:true, active:true, order:4, points:10,
-        options:[], correctOption:"", eliminatoryOptions:[], minLength:50,
-        manualCriteria:"Avaliar controle emocional, comunicação, preservação da vida, hierarquia e proporcionalidade."
-      },
-      {
-        id:"force", title:"Como equilibrar autoridade, respeito e uso proporcional da força?",
-        description:"Explique os limites da atuação de um policial penal.",
-        category:"Conduta", type:"open", required:true, active:true, order:5, points:10,
-        options:[], correctOption:"", eliminatoryOptions:[], minLength:50,
-        manualCriteria:"Avaliar proporcionalidade, escalonamento do uso da força e respeito ao roleplay."
-      },
-      {
-        id:"motivation", title:"Por que deseja ingressar na Polícia Penal?",
-        description:"Apresente sua motivação e o que pretende contribuir para a corporação.",
-        category:"Perfil", type:"open", required:true, active:true, order:6, points:10,
-        options:[], correctOption:"", eliminatoryOptions:[], minLength:50,
-        manualCriteria:"Avaliar autenticidade, maturidade, disponibilidade e alinhamento com a corporação."
-      }
-    ];
-    writeJSON(QUESTIONS_KEY, seed);
-    return seed;
+  const addAudit = async (action,resourceType,resourceId,oldData=null,newData=null) => {
+    if (!cache.currentUser) return;
+    const payload = {
+      actor_id:cache.currentUser.id,
+      actor_name:cache.currentUser.name,
+      actor_role:cache.currentUser.role,
+      action,resource_type:resourceType,resource_id:String(resourceId||""),
+      old_data:oldData,new_data:newData
+    };
+    const { data, error } = await supabaseClient.from("audit_logs").insert(payload).select().single();
+    if (!error && data) cache.auditLogs.unshift(camelAudit(data));
   };
 
-  const seedSettings = () => {
-    const current = readJSON(SETTINGS_KEY, null);
-    if (current) return current;
-    const seed = {recruitmentOpen:true,minimumScore:4,retryDays:7,showPublicReason:false};
-    writeJSON(SETTINGS_KEY, seed);
-    return seed;
+  const createStaffUser = async data => {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const token = sessionData.session?.access_token;
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-staff`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({action:"create",payload:data})
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error||"Falha ao criar integrante.");
+    const user=camelProfile(result.profile);
+    cache.users.push(user);
+    return user;
   };
 
-  const applications = () => readJSON(APP_KEY, []);
-  const saveApplications = items => writeJSON(APP_KEY, items);
-
-  const generateProtocol = () => {
-    const year = new Date().getFullYear();
-    return `PP-${year}-${String(applications().length + 1).padStart(4,"0")}`;
+  const updateStaffUser = async (id,patch) => {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const token = sessionData.session?.access_token;
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/manage-staff`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({action:"update",userId:id,payload:patch})
+    });
+    const result=await response.json();
+    if(!response.ok) throw new Error(result.error||"Falha ao atualizar integrante.");
+    const user=camelProfile(result.profile);
+    const index=cache.users.findIndex(u=>u.id===id);
+    if(index>=0)cache.users[index]=user;
+    return user;
   };
 
-  const createApplication = data => {
-    const items = applications();
-    items.unshift(data);
-    saveApplications(items);
-    return data;
+  const deleteStaffUser = async id => {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    const token = sessionData.session?.access_token;
+    const response=await fetch(`${SUPABASE_URL}/functions/v1/manage-staff`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({action:"delete",userId:id})
+    });
+    const result=await response.json();
+    if(!response.ok)return {ok:false,reason:result.error||"failed"};
+    cache.users=cache.users.filter(u=>u.id!==id);
+    return {ok:true};
   };
 
-  const updateApplication = (id, patch) => {
-    const items = applications();
-    const index = items.findIndex(i=>i.id===id);
-    if(index<0) return null;
-    items[index] = {...items[index],...patch,updatedAt:new Date().toISOString()};
-    saveApplications(items);
-    return items[index];
-  };
-
-  const findByProtocol = protocol => applications().find(a=>a.protocol.toLowerCase()===String(protocol).trim().toLowerCase());
-
-  const setAdminSession = active => {
-    if (!active) logoutStaff();
-    else sessionStorage.setItem(SESSION_KEY,"1");
-  };
-  const hasAdminSession = () => sessionStorage.getItem(SESSION_KEY)==="1" && !!currentUser();
-
-  const setCandidateSession = appId => appId ? sessionStorage.setItem(CANDIDATE_KEY,appId) : sessionStorage.removeItem(CANDIDATE_KEY);
-  const candidateSession = () => sessionStorage.getItem(CANDIDATE_KEY);
-
-  seedUsers(); seedAnnouncements(); seedQuestions(); seedSettings();
   return {
-    applications,saveApplications,generateProtocol,createApplication,updateApplication,findByProtocol,
-    setAdminSession,hasAdminSession,setCandidateSession,candidateSession,
-    questions:()=>readJSON(QUESTIONS_KEY,[]),saveQuestions:q=>writeJSON(QUESTIONS_KEY,q),
-    settings:()=>readJSON(SETTINGS_KEY,{}),saveSettings:s=>writeJSON(SETTINGS_KEY,s),
-    users,saveUsers,currentUser,loginStaff,logoutStaff,hasPermission,requirePermission,
-    defaultPermissions,needsInitialSetup,createInitialAdmin,createStaffUser,updateStaffUser,deleteStaffUser,addAudit,auditLogs,
-    announcements,saveAnnouncements,createAnnouncement,updateAnnouncement,deleteAnnouncement,announcementsForStatus
+    defaultPermissions,initializePublic,initializeStaff,
+    applications,questions,settings,users,announcements,auditLogs,currentUser,
+    hasAdminSession,hasPermission,loginStaff,logoutStaff,
+    needsInitialSetup,createInitialAdmin,generateProtocol,
+    createApplication,findByProtocol,updateApplication,
+    saveQuestions,deleteQuestion,saveSettings,
+    createAnnouncement,updateAnnouncement,deleteAnnouncement,announcementsForStatus,
+    addAudit,createStaffUser,updateStaffUser,deleteStaffUser
   };
 })();

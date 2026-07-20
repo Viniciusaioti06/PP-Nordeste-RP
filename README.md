@@ -1,22 +1,14 @@
 # Sistema Oficial de Recrutamento — Polícia Penal Ceará
 
-## Release 1.0
+## Release 1.1 — Supabase
 
-Portal oficial para gerenciamento do processo seletivo da Polícia Penal Ceará no GTA RP.
+Esta versão substitui o armazenamento local por:
 
-## Cargos
+- Supabase Postgres
+- Supabase Auth
+- Row Level Security
+- Funções RPC para inscrição e consulta pública
+- Edge Function para gestão segura da equipe
+- Persistência real de questões, candidatos, avisos, configurações e auditoria
 
-### Administrador
-Acesso completo ao sistema, equipe, permissões, configurações, auditoria, avisos e questionário.
-
-### Supervisor
-Acesso à análise de candidatos, teste físico, questionário, avisos e auditoria. Não gerencia a equipe nem as configurações gerais por padrão.
-
-### Recrutador
-Acesso operacional aos candidatos, avaliações e teste físico conforme as permissões concedidas.
-
-## Primeiro acesso
-Ao abrir `painel/login.html` pela primeira vez, o sistema direciona para a criação do administrador principal.
-
-## Segurança
-Para implantação pública definitiva, conectar ao Supabase Auth e aplicar políticas RLS.
+Leia `SUPABASE-GUIA.md` antes de abrir o sistema.

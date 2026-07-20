@@ -1,5 +1,6 @@
 
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded",async()=>{
+  try{await PPStore.initializePublic();}catch(err){document.querySelector("[data-form-shell]").innerHTML=`<div class="empty-state"><h2>Falha ao conectar ao banco</h2><p>${ppEscape(err.message)}</p></div>`;return;}
   const settings=PPStore.settings();
   const shell=document.querySelector("[data-form-shell]");
   if(!settings.recruitmentOpen){
@@ -107,7 +108,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   next.addEventListener("click",()=>{if(validate()){current++;render();}});
   prev.addEventListener("click",()=>{current--;render();});
 
-  form.addEventListener("submit",e=>{
+  form.addEventListener("submit",async e=>{
     e.preventDefault();if(!validate())return;
     const d=Object.fromEntries(new FormData(form).entries());
     let autoScore=0;
@@ -143,8 +144,10 @@ document.addEventListener("DOMContentLoaded",()=>{
       status,publicNote:note,reviewerNotes:"",createdAt:now,updatedAt:now,eliminatory,
       questionSnapshot:activeQuestions,timeline:[{status:"Inscrição enviada",date:now},{status:"Triagem automática",date:now},{status,date:now}]
     };
-    PPStore.createApplication(app);
-    document.querySelector("[data-protocol]").textContent=app.protocol;
+    try{
+      const created=await PPStore.createApplication(app);
+      document.querySelector("[data-protocol]").textContent=created.protocol;
+    }catch(err){ppToast(`Não foi possível enviar: ${err.message}`);return;}
     document.querySelector("#success-modal").showModal();
     form.reset();current=0;render();
   });

@@ -1,8 +1,8 @@
 
-document.addEventListener("DOMContentLoaded",()=>{
-  if(!PPStore.hasAdminSession()){location.href="login.html";return;}
+document.addEventListener("DOMContentLoaded",async()=>{
+  try{if(!(await PPStore.initializeStaff())){location.href="login.html";return;}}catch(err){alert(`Falha ao carregar o painel: ${err.message}`);location.href="login.html";return;}
   const currentUser=PPStore.currentUser();
-  if(!currentUser||!currentUser.active){PPStore.logoutStaff();location.href="login.html";return;}
+  if(!currentUser||!currentUser.active){await PPStore.logoutStaff();location.href="login.html";return;}
 
   document.querySelector("[data-user-name]").textContent=currentUser.name;
   document.querySelector("[data-user-role]").textContent={admin:"Administrador",supervisor:"Supervisor",recruiter:"Recrutador"}[currentUser.role]||"Usuário";
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(id==="avisos") renderAnnouncements();
   };
   links.forEach(l=>l.addEventListener("click",()=>show(l.dataset.sectionLink)));
-  document.querySelector("[data-logout]").addEventListener("click",()=>{PPStore.logoutStaff();location.href="login.html"});
+  document.querySelector("[data-logout]").addEventListener("click",async()=>{await PPStore.logoutStaff();location.href="login.html"});
   document.querySelector("[data-open-candidates]")?.addEventListener("click",()=>show("candidatos"));
 
   const renderStats=()=>{
@@ -122,26 +122,26 @@ document.addEventListener("DOMContentLoaded",()=>{
     return questions;
   };
 
-  const moveQuestion=(id,direction)=>{
+  const moveQuestion=async(id,direction)=>{
     if(!PPStore.hasPermission("questions_manage"))return;
     const qs=normalizeOrder(PPStore.questions());
     const index=qs.findIndex(q=>q.id===id);
     const target=index+direction;
     if(index<0||target<0||target>=qs.length)return;
     [qs[index],qs[target]]=[qs[target],qs[index]];
-    normalizeOrder(qs);PPStore.saveQuestions(qs);renderQuestions();
+    normalizeOrder(qs);await PPStore.saveQuestions(qs);renderQuestions();
   };
 
-  const reorderByDrop=(sourceId,targetId)=>{
+  const reorderByDrop=async(sourceId,targetId)=>{
     if(!PPStore.hasPermission("questions_manage"))return;
     const qs=normalizeOrder(PPStore.questions());
     const sourceIndex=qs.findIndex(q=>q.id===sourceId);
     const targetIndex=qs.findIndex(q=>q.id===targetId);
     const [item]=qs.splice(sourceIndex,1);qs.splice(targetIndex,0,item);
-    normalizeOrder(qs);PPStore.saveQuestions(qs);renderQuestions();
+    normalizeOrder(qs);await PPStore.saveQuestions(qs);renderQuestions();
   };
 
-  const duplicateQuestion=id=>{
+  const duplicateQuestion=async id=>{
     if(!PPStore.hasPermission("questions_manage"))return;
     const qs=normalizeOrder(PPStore.questions());
     const source=qs.find(q=>q.id===id);if(!source)return;
@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     copy.options=(copy.options||[]).map((o,i)=>({...o,id:`opt-${Date.now()}-${i}`}));
     copy.correctOption="";
     copy.eliminatoryOptions=[];
-    qs.push(copy);PPStore.saveQuestions(qs);renderQuestions();ppToast("Questão duplicada.");
+    qs.push(copy);await PPStore.saveQuestions(qs);renderQuestions();ppToast("Questão duplicada.");
   };
 
   const addOptionRow=(option={})=>{
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     eliminatory:row.querySelector("[data-eliminatory-option]").checked
   })).filter(o=>o.label);
 
-  editorForm.addEventListener("submit",e=>{
+  editorForm.addEventListener("submit",async e=>{
     if(!PPStore.hasPermission("questions_manage"))return;
     e.preventDefault();
     const qs=normalizeOrder(PPStore.questions());
@@ -228,14 +228,14 @@ document.addEventListener("DOMContentLoaded",()=>{
       manualCriteria:editorForm.manualCriteria.value.trim()
     };
     if(existing)Object.assign(existing,question);else qs.push(question);
-    PPStore.saveQuestions(normalizeOrder(qs));questionModal.close();renderQuestions();ppToast("Questão salva.");
+    await PPStore.saveQuestions(normalizeOrder(qs));questionModal.close();renderQuestions();ppToast("Questão salva.");
   });
 
-  const deleteCurrent=()=>{
+  const deleteCurrent=async()=>{
     if(!PPStore.hasPermission("questions_manage"))return;
     const id=editorForm.id.value;if(!id)return;
     if(!confirm("Excluir esta questão permanentemente?"))return;
-    PPStore.saveQuestions(normalizeOrder(PPStore.questions().filter(q=>q.id!==id)));
+    await PPStore.deleteQuestion(id);
     questionModal.close();renderQuestions();ppToast("Questão excluída.");
   };
 
@@ -253,28 +253,22 @@ document.addEventListener("DOMContentLoaded",()=>{
     document.querySelector("[name=retryDays]").value=s.retryDays;
     document.querySelector("[name=showPublicReason]").checked=s.showPublicReason;
   };
-  document.querySelector("#settings-form").addEventListener("submit",e=>{
+  document.querySelector("#settings-form").addEventListener("submit",async e=>{
     e.preventDefault();
     if(!PPStore.hasPermission("announcements_manage")){document.querySelector("[data-access-denied]").showModal();return;}
     const f=e.currentTarget;
     const oldSettings=PPStore.settings();
-    PPStore.saveSettings({
+    await PPStore.saveSettings({
       recruitmentOpen:f.recruitmentOpen.checked,
       minimumScore:Number(f.minimumScore.value),
       retryDays:Number(f.retryDays.value),
       showPublicReason:f.showPublicReason.checked
     });
-    PPStore.addAudit("settings_updated","settings","recruitment",oldSettings,PPStore.settings());
+    await PPStore.addAudit("settings_updated","settings","recruitment",oldSettings,PPStore.settings());
     ppToast("Configurações salvas.");
   });
   document.querySelector("[data-clear-demo]").addEventListener("click",()=>{
-    if(!PPStore.hasPermission("applications_delete")){document.querySelector("[data-access-denied]").showModal();return;}
-    if(confirm("Deseja remover todas as inscrições locais?")){
-      const oldData=PPStore.applications();
-      PPStore.saveApplications([]);
-      PPStore.addAudit("applications_cleared","applications","all",{count:oldData.length},{count:0});
-      renderStats();renderTable();ppToast("Inscrições removidas.");
-    }
+    ppToast("A exclusão em massa deve ser feita diretamente no Supabase com confirmação administrativa.");
   });
   document.querySelector("[data-search]").addEventListener("input",renderTable);
   document.querySelector("[data-filter]").addEventListener("change",renderTable);
@@ -348,7 +342,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     document.querySelectorAll("[data-edit-staff]").forEach(button=>button.addEventListener("click",()=>openStaffEditor(button.dataset.editStaff)));
   };
 
-  staffForm.addEventListener("submit",event=>{
+  staffForm.addEventListener("submit",async event=>{
     event.preventDefault();
     if(!PPStore.hasPermission("staff_manage"))return;
     const id=staffForm.id.value;
@@ -360,14 +354,14 @@ document.addEventListener("DOMContentLoaded",()=>{
       role:staffForm.role.value,password:staffForm.password.value,
       active:staffForm.active.checked,permissions:collectPermissions()
     };
-    if(id) PPStore.updateStaffUser(id,data); else PPStore.createStaffUser(data);
+    if(id) await PPStore.updateStaffUser(id,data); else await PPStore.createStaffUser(data);
     staffModal.close();renderStaff();renderAudit();ppToast("Integrante salvo.");
   });
 
-  document.querySelector("[data-delete-staff]").addEventListener("click",()=>{
+  document.querySelector("[data-delete-staff]").addEventListener("click",async()=>{
     const id=staffForm.id.value;
     if(!id||!confirm("Remover este integrante da equipe?"))return;
-    const result=PPStore.deleteStaffUser(id);
+    const result=await PPStore.deleteStaffUser(id);
     if(!result.ok){ppToast(result.reason==="self"?"Você não pode remover seu próprio usuário.":"Não foi possível remover.");return;}
     staffModal.close();renderStaff();renderAudit();ppToast("Integrante removido.");
   });
@@ -437,7 +431,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     announcementModal.showModal();
   };
 
-  announcementForm.addEventListener("submit",event=>{
+  announcementForm.addEventListener("submit",async event=>{
     event.preventDefault();
     const data={
       title:announcementForm.title.value.trim(),
@@ -446,14 +440,14 @@ document.addEventListener("DOMContentLoaded",()=>{
       active:announcementForm.active.checked
     };
     const id=announcementForm.id.value;
-    if(id)PPStore.updateAnnouncement(id,data);else PPStore.createAnnouncement(data);
+    if(id)await PPStore.updateAnnouncement(id,data);else await PPStore.createAnnouncement(data);
     announcementModal.close();renderAnnouncements();renderAudit();ppToast("Aviso salvo.");
   });
 
-  document.querySelector("[data-delete-announcement]").addEventListener("click",()=>{
+  document.querySelector("[data-delete-announcement]").addEventListener("click",async()=>{
     const id=announcementForm.id.value;
     if(!id||!confirm("Excluir este aviso?"))return;
-    PPStore.deleteAnnouncement(id);announcementModal.close();renderAnnouncements();renderAudit();ppToast("Aviso excluído.");
+    await PPStore.deleteAnnouncement(id);announcementModal.close();renderAnnouncements();renderAudit();ppToast("Aviso excluído.");
   });
 
   document.querySelector("[data-new-announcement]").addEventListener("click",()=>openAnnouncementEditor());

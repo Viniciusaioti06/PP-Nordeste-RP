@@ -1,6 +1,6 @@
 
-document.addEventListener("DOMContentLoaded",()=>{
-  if(!PPStore.hasAdminSession()){location.href="login.html";return;}
+document.addEventListener("DOMContentLoaded",async()=>{
+  try{if(!(await PPStore.initializeStaff())){location.href="login.html";return;}}catch(err){alert(err.message);location.href="login.html";return;}
   if(!PPStore.hasPermission("candidates_review")){
     document.querySelector("[data-page]").innerHTML='<div class="empty-state"><h2>Acesso negado</h2><p>Você não possui permissão para analisar candidatos.</p><a class="button primary" href="dashboard.html">Voltar ao painel</a></div>';
     return;
@@ -25,13 +25,13 @@ document.addEventListener("DOMContentLoaded",()=>{
       ${answer.type!=="open"?`<small class="muted">Pontuação: ${Number(answer.points||0)}/${Number(answer.maxPoints||0)}</small>`:""}
     </div>`).join("");
   document.querySelector("[data-notes]").value=app.reviewerNotes||"";
-  const decide=(approved)=>{
+  const decide=async(approved)=>{
     const needed=approved?"candidates_approve":"candidates_reject";
     if(!PPStore.hasPermission(needed)){ppToast("Você não possui permissão para esta decisão.");return;}
     const status=approved?"Aprovado no teste teórico":"Reprovado no teste teórico";
     const now=new Date().toISOString();
     const oldData={status:app.status,reviewerNotes:app.reviewerNotes};
-    PPStore.updateApplication(app.id,{
+    await PPStore.updateApplication(app.id,{
       status,reviewerNotes:document.querySelector("[data-notes]").value.trim(),
       interviewRecruiter:approved?PPStore.currentUser()?.name:app.interviewRecruiter,
       publicNote:approved
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       physicalRecruiter:approved?PPStore.currentUser()?.name:app.physicalRecruiter,
       timeline:[...app.timeline,{status,date:now}]
     });
-    PPStore.addAudit(approved?"theoretical_test_approved":"theoretical_test_rejected","application",app.id,oldData,{status});
+    await PPStore.addAudit(approved?"theoretical_test_approved":"theoretical_test_rejected","application",app.id,oldData,{status});
     ppToast("Decisão registrada.");setTimeout(()=>location.reload(),500);
   };
   document.querySelector("[data-approve]").addEventListener("click",()=>decide(true));
@@ -52,12 +52,12 @@ document.addEventListener("DOMContentLoaded",()=>{
   physicalApprove.classList.toggle("hidden",!isPhysicalStage);
   physicalReject.classList.toggle("hidden",!isPhysicalStage);
 
-  const registerPhysicalResult=passed=>{
+  const registerPhysicalResult=async passed=>{
     if(!PPStore.hasPermission("interviews_manage")){ppToast("Você não possui permissão para registrar o teste físico.");return;}
     const status=passed?"Aprovado no teste físico":"Reprovado no teste físico";
     const now=new Date().toISOString();
     const oldData={status:app.status};
-    PPStore.updateApplication(app.id,{
+    await PPStore.updateApplication(app.id,{
       status,
       physicalRecruiter:PPStore.currentUser()?.name,
       publicNote:passed
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         :"Você não foi aprovado no teste físico desta turma.",
       timeline:[...app.timeline,{status,date:now}]
     });
-    PPStore.addAudit(passed?"physical_test_approved":"physical_test_rejected","application",app.id,oldData,{status});
+    await PPStore.addAudit(passed?"physical_test_approved":"physical_test_rejected","application",app.id,oldData,{status});
     ppToast("Resultado do teste físico registrado.");
     setTimeout(()=>location.reload(),500);
   };
