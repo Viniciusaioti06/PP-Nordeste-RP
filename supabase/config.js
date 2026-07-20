@@ -9,7 +9,7 @@
  *
  * Nunca coloque a service_role neste arquivo.
  */
-const SUPABASE_URL = "sb_publishable_oUJhcPJVXjZFsZCU0_2FFg_Nqt8AQ1x";
+const SUPABASE_URL = "https://yfsdexvuzhjcwwnwxyiy.supabase.co/rest/v1/";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmc2RleHZ1emhqY3d3bnd4eWl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1MDI1NTMsImV4cCI6MjEwMDA3ODU1M30.e3yIfv_d-5ThLbmMyigAtIemcuYE0ivX6QL5Ty1RqZ0";
 
 const SUPABASE_CONFIGURED =
