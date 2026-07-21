@@ -92,11 +92,25 @@
       <div><span class="eyebrow">ADMINISTRAÇÃO</span><h2>Equipe e permissões</h2><p class="muted">Gerencie administradores, recrutadores e acessos individuais.</p></div>
       <button class="button primary" type="button" data-new-staff>+ Adicionar integrante</button>
     </div>
+    <div class="admin-toolbar">
+      <label class="search-field">
+        <span class="sr-only">Pesquisar equipe</span>
+        <input type="search" placeholder="Pesquisar por nome, usuário, e-mail ou cargo..." data-staff-search>
+      </label>
+      <span class="muted" data-staff-result-count></span>
+    </div>
     <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Integrante</th><th>Usuário</th><th>Cargo</th><th>Status</th><th>Último acesso</th><th></th></tr></thead><tbody data-staff-table></tbody></table></div></div>
   </section>
 
   <section id="auditoria" class="admin-section">
     <div class="question-editor-header"><div><span class="eyebrow">SEGURANÇA</span><h2>Registro de auditoria</h2><p class="muted">Histórico das principais ações realizadas dentro do painel.</p></div></div>
+    <div class="admin-toolbar">
+      <label class="search-field">
+        <span class="sr-only">Pesquisar auditoria</span>
+        <input type="search" placeholder="Pesquisar por usuário, ação, recurso ou data..." data-audit-search>
+      </label>
+      <span class="muted" data-audit-result-count></span>
+    </div>
     <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Usuário</th><th>Ação</th><th>Recurso</th><th>Data</th></tr></thead><tbody data-audit-table></tbody></table></div><div class="empty-state hidden" data-audit-empty>Nenhum registro de auditoria.</div></div>
   </section>
 
@@ -151,7 +165,7 @@
       <label class="field"><span>E-mail</span><input name="email" type="email" required><small class="error"></small></label>
       <label class="field"><span>Discord</span><input name="discord" required><small class="error"></small></label>
       <label class="field"><span>Cargo</span><select name="role"><option value="recruiter">Recrutador</option><option value="supervisor">Supervisor</option><option value="admin">Administrador</option></select></label>
-      <label class="field"><span>Senha</span><input name="password" type="text" required><small class="error"></small></label>
+      <label class="field"><span>Senha inicial</span><input name="password" type="password" minlength="8"><small class="muted" data-password-help>Mínimo de 8 caracteres.</small><small class="error"></small></label>
       <label class="check-row"><input type="checkbox" name="active" checked> Acesso ativo</label><span></span>
       <div class="full">
         <h3>Permissões específicas</h3>

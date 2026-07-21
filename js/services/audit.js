@@ -1,25 +1,33 @@
 
 window.AuditService = {
   async list() {
+    requireConfig();
     const { data, error } = await supabaseClient
-      .from("audit_logs").select("*").order("created_at",{ascending:false}).limit(500);
+      .from("audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(500);
+
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   async write(action, resourceType, resourceId, oldData = null, newData = null) {
-    const profile = await Auth.profile();
-    if (!profile) return;
-    const { error } = await supabaseClient.from("audit_logs").insert({
-      actor_id: profile.id,
-      actor_name: profile.display_name,
-      actor_role: profile.role,
-      action,
-      resource_type: resourceType,
-      resource_id: String(resourceId ?? ""),
-      old_data: oldData,
-      new_data: newData
+    requireConfig();
+
+    const { data, error } = await supabaseClient.rpc("write_audit_event", {
+      p_action: action,
+      p_resource_type: resourceType,
+      p_resource_id: resourceId == null ? null : String(resourceId),
+      p_old_data: oldData,
+      p_new_data: newData
     });
-    if (error) console.warn("Falha ao registrar auditoria:", error.message);
+
+    if (error) {
+      console.error("Falha ao registrar auditoria:", error);
+      throw error;
+    }
+
+    return data;
   }
 };

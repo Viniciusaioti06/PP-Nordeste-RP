@@ -18,3 +18,20 @@ https://yfsdexvuzhjcwwnwxyiy.supabase.co
 
 O `createClient` recebe a URL-base do projeto, sem `/rest/v1`.
 O caminho `/rest/v1` é adicionado internamente pela biblioteca.
+
+
+## Atualização 2.0.4
+
+Para um projeto Supabase que já recebeu o `setup.sql` anteriormente, execute:
+
+```text
+supabase/upgrade-2.0.4.sql
+```
+
+Esse script cria as funções seguras responsáveis por:
+
+- atualizar `profiles.last_login` após cada login;
+- gravar ações em `audit_logs`;
+- manter a leitura da auditoria restrita às permissões administrativas.
+
+Depois publique os arquivos atualizados no Netlify e limpe o cache do deploy.

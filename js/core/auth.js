@@ -11,6 +11,23 @@ window.Auth = {
     requireConfig();
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) throw error;
+
+    const { error: accessError } = await supabaseClient.rpc("register_staff_login");
+    if (accessError) {
+      console.warn("Não foi possível registrar o último acesso:", accessError.message);
+    }
+
+    const { error: auditError } = await supabaseClient.rpc("write_audit_event", {
+      p_action: "login",
+      p_resource_type: "session",
+      p_resource_id: data.user?.id || null,
+      p_old_data: null,
+      p_new_data: { email: data.user?.email || email }
+    });
+    if (auditError) {
+      console.warn("Não foi possível registrar o login na auditoria:", auditError.message);
+    }
+
     return data;
   },
 

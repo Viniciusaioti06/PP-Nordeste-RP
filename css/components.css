@@ -47,3 +47,60 @@
 .public-header{background:linear-gradient(180deg,rgba(23,21,15,.88),rgba(23,21,15,.35));backdrop-filter:blur(16px)}
 .public-nav a:hover{color:var(--gold-2)}
 .card{background:linear-gradient(145deg,rgba(212,176,70,.045),rgba(255,255,255,.018)),rgba(18,17,13,.78)}
+
+
+/* Pesquisa das áreas administrativas */
+.admin-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:18px 0;
+}
+.search-field{
+  position:relative;
+  display:block;
+  width:min(100%,560px);
+}
+.search-field::before{
+  content:"⌕";
+  position:absolute;
+  left:16px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:22px;
+  line-height:1;
+  opacity:.62;
+  pointer-events:none;
+}
+.search-field input{
+  width:100%;
+  min-height:46px;
+  padding:11px 16px 11px 46px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--text);
+  font:inherit;
+  outline:none;
+  transition:border-color .2s ease,box-shadow .2s ease;
+}
+.search-field input:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 18%,transparent);
+}
+.sr-only{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+@media(max-width:700px){
+  .admin-toolbar{align-items:stretch;flex-direction:column}
+  .search-field{width:100%}
+}

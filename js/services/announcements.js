@@ -1,31 +1,72 @@
 
 window.AnnouncementsService = {
   async list() {
+    requireConfig();
     const { data, error } = await supabaseClient
-      .from("announcements").select("*").order("created_at",{ascending:false});
+      .from("announcements")
+      .select("*")
+      .order("created_at", { ascending: false });
+
     if (error) throw error;
-    return data;
+    return data || [];
   },
 
   async publicFor(status) {
-    const { data, error } = await supabaseClient.rpc("public_announcements_for_status", {
-      p_status: status
-    });
+    requireConfig();
+    const { data, error } = await supabaseClient.rpc(
+      "public_announcements_for_status",
+      { p_status: status }
+    );
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async create(item) {
+    requireConfig();
+    const profile = await Auth.profile();
+    const { data, error } = await supabaseClient
+      .from("announcements")
+      .insert({
+        title: item.title,
+        message: item.message,
+        audience_status: item.audience_status,
+        active: item.active,
+        created_by: profile?.id || null
+      })
+      .select()
+      .single();
+
     if (error) throw error;
     return data;
   },
 
-  async save(item) {
-    const query = item.id
-      ? supabaseClient.from("announcements").update(item).eq("id", item.id)
-      : supabaseClient.from("announcements").insert(item);
-    const { data, error } = await query.select().single();
+  async update(id, item) {
+    requireConfig();
+    const { data, error } = await supabaseClient
+      .from("announcements")
+      .update({
+        title: item.title,
+        message: item.message,
+        audience_status: item.audience_status,
+        active: item.active,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
     if (error) throw error;
     return data;
   },
 
   async remove(id) {
-    const { error } = await supabaseClient.from("announcements").delete().eq("id",id);
+    requireConfig();
+    const { error } = await supabaseClient
+      .from("announcements")
+      .delete()
+      .eq("id", id);
+
     if (error) throw error;
   }
 };

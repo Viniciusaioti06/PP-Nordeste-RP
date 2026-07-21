@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(id==="configuracoes")await renderSettings();
   };
   links.forEach(link=>link.addEventListener("click",()=>show(link.dataset.sectionLink)));
-  document.querySelector("[data-logout]").addEventListener("click",async()=>{await Auth.signOut();location.href="login.html"});
+  document.querySelector("[data-logout]").addEventListener("click",async()=>{try{await AuditService.write("logout","session",profile.id,null,null)}catch{}await Auth.signOut();location.href="login.html"});
 
   let applications=await ApplicationsService.list();
   const renderStats=()=>{
@@ -127,22 +127,425 @@ document.addEventListener("DOMContentLoaded",async()=>{
     await QuestionsService.save(payload);questionModal.close();await renderQuestions();showToast("Questão salva.");
   });
 
+  const announcementModal=document.querySelector("[data-announcement-modal]");
+  const announcementForm=document.querySelector("#announcement-form");
+  const announcementDeleteButton=document.querySelector("[data-delete-announcement]");
+  let announcementItems=[];
+
+  const openAnnouncementModal=(item=null)=>{
+    announcementForm.reset();
+    announcementForm.id.value=item?.id||"";
+    announcementForm.title.value=item?.title||"";
+    announcementForm.message.value=item?.message||"";
+    announcementForm.audienceStatus.value=item?.audience_status||"Aprovado no teste teórico";
+    announcementForm.active.checked=item?.active!==false;
+
+    document.querySelector("[data-announcement-title]").textContent=
+      item?"Editar aviso":"Novo aviso";
+    announcementDeleteButton.classList.toggle("hidden",!item);
+    announcementModal.showModal();
+  };
+
   const renderAnnouncements=async()=>{
-    const list=await AnnouncementsService.list();
-    document.querySelector("[data-announcement-list]").innerHTML=list.map(item=>`<article class="question-editor-row"><div>✦</div><div><span class="eyebrow">${escapeHTML(item.audience_status)}</span><h3>${escapeHTML(item.title)}</h3><p class="muted">${escapeHTML(item.message)}</p></div><div><button class="button secondary small" data-announcement="${item.id}">Editar</button></div></article>`).join("");
-    document.querySelector("[data-announcement-empty]").classList.toggle("hidden",list.length>0);
+    if(!profile.permissions?.announcements_manage)return;
+    const list=document.querySelector("[data-announcement-list]");
+    list.innerHTML='<div class="muted">Carregando avisos...</div>';
+
+    try{
+      announcementItems=await AnnouncementsService.list();
+      list.innerHTML=announcementItems.map(item=>`
+        <article class="question-editor-row">
+          <div class="drag-handle">✦</div>
+          <div>
+            <span class="eyebrow">${escapeHTML(item.audience_status)}</span>
+            <h3>${escapeHTML(item.title)}</h3>
+            <p class="muted">${escapeHTML(item.message)}</p>
+            <div class="question-meta">
+              <span>${item.active?"Ativo":"Inativo"}</span>
+              <span>${formatDate(item.created_at)}</span>
+            </div>
+          </div>
+          <div class="question-row-actions">
+            <button class="button secondary small" type="button" data-edit-announcement="${item.id}">Editar</button>
+          </div>
+        </article>
+      `).join("");
+      document.querySelector("[data-announcement-empty]").classList.toggle("hidden",announcementItems.length>0);
+
+      list.querySelectorAll("[data-edit-announcement]").forEach(button=>{
+        button.addEventListener("click",()=>{
+          const item=announcementItems.find(entry=>entry.id===button.dataset.editAnnouncement);
+          if(item)openAnnouncementModal(item);
+        });
+      });
+    }catch(error){
+      list.innerHTML=`<div class="error">${escapeHTML(error.message)}</div>`;
+    }
+  };
+
+  document.querySelector("[data-new-announcement]")?.addEventListener("click",()=>{
+    if(!profile.permissions?.announcements_manage){
+      showToast("Você não possui permissão para criar avisos.");
+      return;
+    }
+    openAnnouncementModal();
+  });
+
+  document.querySelector("[data-announcement-close]")?.addEventListener("click",()=>announcementModal.close());
+  document.querySelector("[data-announcement-cancel]")?.addEventListener("click",()=>announcementModal.close());
+
+  announcementForm?.addEventListener("submit",async event=>{
+    event.preventDefault();
+
+    const id=announcementForm.id.value.trim();
+    const submitButton=announcementForm.querySelector('button[type="submit"]');
+    submitButton.disabled=true;
+    submitButton.textContent="Salvando...";
+
+    const payload={
+      title:announcementForm.title.value.trim(),
+      message:announcementForm.message.value.trim(),
+      audience_status:announcementForm.audienceStatus.value,
+      active:announcementForm.active.checked
+    };
+
+    try{
+      if(id){
+        await AnnouncementsService.update(id,payload);
+        await AuditService.write("announcement_updated","announcement",id,null,payload);
+        showToast("Aviso atualizado.");
+      }else{
+        const created=await AnnouncementsService.create(payload);
+        await AuditService.write("announcement_created","announcement",created.id,null,payload);
+        showToast("Aviso publicado.");
+      }
+      announcementModal.close();
+      await renderAnnouncements();
+    }catch(error){
+      showToast(error.message);
+      console.error("Erro ao salvar aviso:",error);
+    }finally{
+      submitButton.disabled=false;
+      submitButton.textContent="Salvar aviso";
+    }
+  });
+
+  announcementDeleteButton?.addEventListener("click",async()=>{
+    const id=announcementForm.id.value.trim();
+    if(!id)return;
+    if(!confirm("Deseja excluir este aviso?"))return;
+
+    announcementDeleteButton.disabled=true;
+    try{
+      await AnnouncementsService.remove(id);
+      await AuditService.write("announcement_deleted","announcement",id,null,null);
+      announcementModal.close();
+      await renderAnnouncements();
+      showToast("Aviso excluído.");
+    }catch(error){
+      showToast(error.message);
+    }finally{
+      announcementDeleteButton.disabled=false;
+    }
+  });
+
+  const permissionDefinitions={
+    dashboard_view:["Ver visão geral","Acessar os indicadores do painel."],
+    candidates_view:["Ver candidatos","Visualizar inscrições e dados básicos."],
+    candidates_review:["Analisar candidatos","Abrir respostas e observações internas."],
+    candidates_approve:["Aprovar candidatos","Aprovar no teste teórico."],
+    candidates_reject:["Reprovar candidatos","Registrar reprovações."],
+    interviews_manage:["Gerenciar teste físico","Registrar resultados do teste físico coletivo."],
+    questions_view:["Ver questionário","Visualizar o banco de questões."],
+    questions_manage:["Editar questionário","Criar, editar e excluir questões."],
+    announcements_manage:["Gerenciar avisos","Criar e editar comunicados coletivos."],
+    settings_manage:["Alterar configurações","Modificar as regras gerais."],
+    staff_manage:["Gerenciar equipe","Criar, editar e remover integrantes."],
+    audit_view:["Ver auditoria","Consultar o histórico de ações."],
+    applications_delete:["Excluir inscrições","Permissão administrativa sensível."]
+  };
+
+  const roleDefaults={
+    recruiter:{
+      dashboard_view:true,candidates_view:true,candidates_review:true,
+      candidates_approve:true,candidates_reject:true,interviews_manage:true,
+      questions_view:true,questions_manage:false,announcements_manage:false,
+      settings_manage:false,staff_manage:false,audit_view:false,
+      applications_delete:false
+    },
+    supervisor:{
+      dashboard_view:true,candidates_view:true,candidates_review:true,
+      candidates_approve:true,candidates_reject:true,interviews_manage:true,
+      questions_view:true,questions_manage:true,announcements_manage:true,
+      settings_manage:false,staff_manage:false,audit_view:true,
+      applications_delete:false
+    },
+    admin:{
+      dashboard_view:true,candidates_view:true,candidates_review:true,
+      candidates_approve:true,candidates_reject:true,interviews_manage:true,
+      questions_view:true,questions_manage:true,announcements_manage:true,
+      settings_manage:true,staff_manage:true,audit_view:true,
+      applications_delete:true
+    }
+  };
+
+  const staffModal=document.querySelector("[data-staff-modal]");
+  const staffForm=document.querySelector("#staff-form");
+  const permissionGrid=document.querySelector("[data-permission-grid]");
+  const staffDeleteButton=document.querySelector("[data-delete-staff]");
+  let staffMembers=[];
+
+  const roleLabel=role=>({
+    admin:"Administrador",
+    supervisor:"Supervisor",
+    recruiter:"Recrutador"
+  }[role]||role);
+
+  const renderPermissionGrid=permissions=>{
+    permissionGrid.innerHTML=Object.entries(permissionDefinitions).map(([key,[title,description]])=>`
+      <label class="permission-item">
+        <input type="checkbox" name="permission_${key}" ${permissions?.[key]?"checked":""}>
+        <span><strong>${escapeHTML(title)}</strong><small>${escapeHTML(description)}</small></span>
+      </label>
+    `).join("");
+  };
+
+  const collectPermissions=()=>Object.keys(permissionDefinitions).reduce((result,key)=>{
+    result[key]=Boolean(staffForm.elements[`permission_${key}`]?.checked);
+    return result;
+  },{});
+
+  const openStaffModal=(user=null)=>{
+    staffForm.reset();
+    staffForm.id.value=user?.id||"";
+    staffForm.name.value=user?.display_name||"";
+    staffForm.username.value=user?.username||"";
+    staffForm.email.value=user?.email||"";
+    staffForm.discord.value=user?.discord||"";
+    staffForm.role.value=user?.role||"recruiter";
+    staffForm.active.checked=user?.active!==false;
+    staffForm.password.value="";
+    staffForm.password.required=!user;
+
+    document.querySelector("[data-staff-modal-title]").textContent=
+      user?"Editar integrante":"Adicionar integrante";
+    document.querySelector("[data-password-help]").textContent=
+      user?"Deixe em branco para manter a senha atual.":"Mínimo de 8 caracteres.";
+    staffDeleteButton.classList.toggle("hidden",!user||user.id===profile.id);
+
+    renderPermissionGrid(user?.permissions||roleDefaults[staffForm.role.value]);
+    staffModal.showModal();
+  };
+
+  const normalizeSearch=value=>String(value||"")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .trim();
+
+  const drawStaffTable=()=>{
+    const table=document.querySelector("[data-staff-table]");
+    const term=normalizeSearch(document.querySelector("[data-staff-search]")?.value);
+    const filtered=staffMembers.filter(user=>{
+      const haystack=[
+        user.display_name,user.username,user.email,user.discord,
+        roleLabel(user.role),user.active?"ativo":"inativo"
+      ].map(normalizeSearch).join(" ");
+      return !term||haystack.includes(term);
+    });
+
+    document.querySelector("[data-staff-result-count]").textContent=
+      `${filtered.length} ${filtered.length===1?"integrante":"integrantes"}`;
+
+    table.innerHTML=filtered.length?filtered.map(user=>`
+      <tr>
+        <td><div class="name-cell"><strong>${escapeHTML(user.display_name||"Sem nome")}</strong><small>${escapeHTML(user.email||"")}</small></div></td>
+        <td>${escapeHTML(user.username||"—")}</td>
+        <td><span class="role-badge ${user.role==="admin"?"admin":user.role==="supervisor"?"supervisor":""}">${escapeHTML(roleLabel(user.role))}</span></td>
+        <td><span class="status-pill ${user.active?"approved":"rejected"}">${user.active?"Ativo":"Desativado"}</span></td>
+        <td>${user.last_login?formatDate(user.last_login):"Nunca acessou"}</td>
+        <td><button class="button secondary small" type="button" data-edit-staff="${user.id}">Editar</button></td>
+      </tr>
+    `).join(""):'<tr><td colspan="6" class="muted">Nenhum integrante encontrado.</td></tr>';
+
+    table.querySelectorAll("[data-edit-staff]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        const user=staffMembers.find(item=>item.id===button.dataset.editStaff);
+        if(user)openStaffModal(user);
+      });
+    });
   };
 
   const renderStaff=async()=>{
-    const list=await StaffService.list();
-    document.querySelector("[data-staff-table]").innerHTML=list.map(user=>`<tr><td>${escapeHTML(user.display_name)}</td><td>${escapeHTML(user.email)}</td><td>${escapeHTML(user.role)}</td><td>${user.active?"Ativo":"Inativo"}</td><td>${formatDate(user.last_login)}</td><td></td></tr>`).join("");
+    if(!profile.permissions?.staff_manage)return;
+    const table=document.querySelector("[data-staff-table]");
+    table.innerHTML='<tr><td colspan="6" class="muted">Carregando equipe...</td></tr>';
+
+    try{
+      staffMembers=await StaffService.list();
+      drawStaffTable();
+    }catch(error){
+      table.innerHTML=`<tr><td colspan="6" class="error">${escapeHTML(error.message)}</td></tr>`;
+    }
+  };
+
+  document.querySelector("[data-staff-search]")?.addEventListener("input",drawStaffTable);
+
+  document.querySelector("[data-new-staff]")?.addEventListener("click",()=>{
+    if(!profile.permissions?.staff_manage){
+      showToast("Você não possui permissão para gerenciar a equipe.");
+      return;
+    }
+    openStaffModal();
+  });
+
+  staffForm?.role.addEventListener("change",()=>{
+    renderPermissionGrid(roleDefaults[staffForm.role.value]||{});
+  });
+
+  document.querySelector("[data-staff-modal-close]")?.addEventListener("click",()=>staffModal.close());
+  document.querySelector("[data-staff-cancel]")?.addEventListener("click",()=>staffModal.close());
+
+  staffForm?.addEventListener("submit",async event=>{
+    event.preventDefault();
+
+    if(!profile.permissions?.staff_manage){
+      showToast("Você não possui permissão para esta ação.");
+      return;
+    }
+
+    const id=staffForm.id.value.trim();
+    const password=staffForm.password.value;
+    if(!id&&password.length<8){
+      showToast("A senha inicial deve possuir pelo menos 8 caracteres.");
+      return;
+    }
+    if(id&&password&&password.length<8){
+      showToast("A nova senha deve possuir pelo menos 8 caracteres.");
+      return;
+    }
+
+    const submitButton=staffForm.querySelector('button[type="submit"]');
+    submitButton.disabled=true;
+    submitButton.textContent=id?"Salvando...":"Criando...";
+
+    const payload={
+      name:staffForm.name.value.trim(),
+      username:staffForm.username.value.trim(),
+      email:staffForm.email.value.trim(),
+      discord:staffForm.discord.value.trim(),
+      role:staffForm.role.value,
+      password,
+      active:staffForm.active.checked,
+      permissions:collectPermissions()
+    };
+
+    try{
+      if(id){
+        await StaffService.invoke("update",payload,id);
+        await AuditService.write("staff_updated","staff",id,null,{email:payload.email,role:payload.role});
+        showToast("Integrante atualizado.");
+      }else{
+        const result=await StaffService.invoke("create",payload);
+        await AuditService.write("staff_created","staff",result?.profile?.id||payload.email,null,{email:payload.email,role:payload.role});
+        showToast("Integrante criado com sucesso.");
+      }
+      staffModal.close();
+      await renderStaff();
+    }catch(error){
+      showToast(error.message);
+      console.error("Erro ao salvar integrante:",error);
+    }finally{
+      submitButton.disabled=false;
+      submitButton.textContent="Salvar integrante";
+    }
+  });
+
+  staffDeleteButton?.addEventListener("click",async()=>{
+    const id=staffForm.id.value.trim();
+    if(!id)return;
+    if(!confirm("Deseja remover este integrante permanentemente?"))return;
+
+    staffDeleteButton.disabled=true;
+    try{
+      await StaffService.invoke("delete",{},id);
+      await AuditService.write("staff_deleted","staff",id,null,null);
+      staffModal.close();
+      await renderStaff();
+      showToast("Integrante removido.");
+    }catch(error){
+      showToast(error.message);
+    }finally{
+      staffDeleteButton.disabled=false;
+    }
+  });
+
+  const auditActionLabel=action=>({
+    login:"Login realizado",
+    staff_created:"Integrante criado",
+    staff_updated:"Integrante atualizado",
+    staff_deleted:"Integrante removido",
+    announcement_created:"Aviso publicado",
+    announcement_updated:"Aviso atualizado",
+    announcement_deleted:"Aviso excluído",
+    application_updated:"Inscrição atualizada",
+    application_deleted:"Inscrição excluída",
+    question_created:"Questão criada",
+    question_updated:"Questão atualizada",
+    question_deleted:"Questão excluída",
+    settings_updated:"Configurações alteradas"
+  }[action]||String(action||"Ação"));
+
+  const auditResourceLabel=resource=>({
+    session:"Sessão",
+    staff:"Equipe",
+    announcement:"Aviso",
+    application:"Inscrição",
+    question:"Questão",
+    settings:"Configurações"
+  }[resource]||String(resource||"—"));
+
+  let auditItems=[];
+
+  const drawAuditTable=()=>{
+    const table=document.querySelector("[data-audit-table]");
+    const term=normalizeSearch(document.querySelector("[data-audit-search]")?.value);
+    const filtered=auditItems.filter(log=>{
+      const haystack=[
+        log.actor_name,log.actor_role,auditActionLabel(log.action),
+        auditResourceLabel(log.resource_type),log.resource_id,
+        formatDate(log.created_at)
+      ].map(normalizeSearch).join(" ");
+      return !term||haystack.includes(term);
+    });
+
+    document.querySelector("[data-audit-result-count]").textContent=
+      `${filtered.length} ${filtered.length===1?"registro":"registros"}`;
+
+    table.innerHTML=filtered.map(log=>`
+      <tr>
+        <td><div class="name-cell"><strong>${escapeHTML(log.actor_name||"Sistema")}</strong><small>${escapeHTML(roleLabel(log.actor_role)||log.actor_role||"")}</small></div></td>
+        <td>${escapeHTML(auditActionLabel(log.action))}</td>
+        <td>${escapeHTML(auditResourceLabel(log.resource_type))}</td>
+        <td>${formatDate(log.created_at)}</td>
+      </tr>
+    `).join("");
+
+    document.querySelector("[data-audit-empty]").classList.toggle("hidden",filtered.length>0);
   };
 
   const renderAudit=async()=>{
-    const list=await AuditService.list();
-    document.querySelector("[data-audit-table]").innerHTML=list.map(log=>`<tr><td>${escapeHTML(log.actor_name)}</td><td>${escapeHTML(log.action)}</td><td>${escapeHTML(log.resource_type)}</td><td>${formatDate(log.created_at)}</td></tr>`).join("");
-    document.querySelector("[data-audit-empty]").classList.toggle("hidden",list.length>0);
+    const table=document.querySelector("[data-audit-table]");
+    table.innerHTML='<tr><td colspan="4" class="muted">Carregando auditoria...</td></tr>';
+    try{
+      auditItems=await AuditService.list();
+      drawAuditTable();
+    }catch(error){
+      table.innerHTML=`<tr><td colspan="4" class="error">${escapeHTML(error.message)}</td></tr>`;
+    }
   };
+
+  document.querySelector("[data-audit-search]")?.addEventListener("input",drawAuditTable);
 
   const renderSettings=async()=>{
     const item=await SettingsService.get();
