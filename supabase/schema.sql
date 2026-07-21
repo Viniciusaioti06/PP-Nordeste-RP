@@ -1,1 +1,1 @@
--- Use setup.sql para instalar a Release 1.1 completa.
+-- Execute setup.sql no SQL Editor.
