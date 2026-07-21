@@ -1,4 +1,4 @@
-project_id = "yfsdexvuzhjcwwnwxyiy"
+project_id = "COLE_AQUI_O_PROJECT_REF"
 
 [functions.manage-staff]
 verify_jwt = true

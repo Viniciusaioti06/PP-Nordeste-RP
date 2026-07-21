@@ -20,7 +20,8 @@ window.showToast = message => {
 };
 
 window.requireConfig = () => {
-  if (!window.APP_CONFIGURED || !window.supabaseClient) {
-    throw new Error("Supabase não configurado. Preencha supabase/config.js.");
+  if (!window.supabaseClient) {
+    throw new Error("Não foi possível iniciar o cliente Supabase.");
   }
+  return window.supabaseClient;
 };

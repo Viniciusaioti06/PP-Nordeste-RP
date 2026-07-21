@@ -1,47 +1,20 @@
-# Instalação — Release 2.0
+# Instalação — Release 2.0.1
 
-## 1. Banco
+A conexão pública já está configurada para o projeto:
 
-Execute `supabase/setup.sql` no SQL Editor do Supabase.
-
-## 2. Configuração pública
-
-Abra `supabase/config.js` e preencha:
-
-```javascript
-window.APP_CONFIG = Object.freeze({
-  SUPABASE_URL: "https://SEU_PROJECT_REF.supabase.co",
-  SUPABASE_ANON_KEY: "SUA_PUBLISHABLE_OU_ANON_KEY"
-});
+```text
+https://yfsdexvuzhjcwwnwxyiy.supabase.co
 ```
 
-Nunca coloque a `service_role` no site.
+## Ordem correta
 
-## 3. Project Ref
+1. Execute `supabase/setup.sql` no SQL Editor.
+2. Publique os arquivos no Netlify.
+3. Abra `/diagnostico-supabase.html`.
+4. Se a conexão for confirmada, abra `/painel/login.html`.
+5. A Edge Function `manage-staff` continua sendo usada somente para gerenciar usuários da equipe.
 
-Abra `supabase/config.toml` e substitua:
+## Importante
 
-```toml
-project_id = "COLE_AQUI_O_PROJECT_REF"
-```
-
-## 4. Edge Function
-
-No terminal, dentro da pasta do projeto:
-
-```bash
-npx supabase login
-npx supabase link --project-ref yfsdexvuzhjcwwnwxyiy
-npx supabase functions deploy manage-staff
-```
-
-## 5. Primeiro administrador
-
-Abra `painel/login.html`. O sistema redirecionará para a configuração inicial quando ainda não existir administrador.
-
-## 6. VS Code
-
-Instale a extensão oficial Deno. O projeto contém:
-
-- `.vscode/settings.json`
-- `supabase/functions/manage-staff/deno.json`
+O `createClient` recebe a URL-base do projeto, sem `/rest/v1`.
+O caminho `/rest/v1` é adicionado internamente pela biblioteca.
