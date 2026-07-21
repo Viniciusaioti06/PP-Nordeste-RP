@@ -35,3 +35,14 @@ Esse script cria as funções seguras responsáveis por:
 - manter a leitura da auditoria restrita às permissões administrativas.
 
 Depois publique os arquivos atualizados no Netlify e limpe o cache do deploy.
+
+
+## Atualização 2.0.6
+
+Para ativar o botão **Excluir todas as inscrições**, execute no SQL Editor:
+
+```text
+supabase/upgrade-2.0.6.sql
+```
+
+A exclusão exige duas confirmações no painel, valida as permissões novamente no banco e registra a quantidade removida na auditoria.

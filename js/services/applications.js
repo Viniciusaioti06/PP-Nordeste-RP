@@ -37,5 +37,12 @@ window.ApplicationsService = {
       .single();
     if (error) throw error;
     return data;
+  },
+
+  async deleteAll() {
+    requireConfig();
+    const { data, error } = await supabaseClient.rpc("delete_all_recruitment_applications");
+    if (error) throw error;
+    return Number(data || 0);
   }
 };

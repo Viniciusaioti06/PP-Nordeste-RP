@@ -21,8 +21,9 @@
 <script src="../js/services/audit.js"></script>
 <script defer src="../js/pages/dashboard.js"></script>
 </head><body class="admin-body">
+<div class="sidebar-overlay" data-sidebar-overlay></div>
 
-<aside class="sidebar">
+<aside class="sidebar" data-sidebar>
   <a class="brand" href="dashboard.html"><span class="brand-mark"><img class="brand-logo-image" src="../assets/images/logo-policia-penal-ceara.png" alt="Logo Polícia Penal Ceará"></span><span class="brand-copy"><strong>Polícia Penal Ceará</strong><small>Recrutamento</small></span></a>
   <nav class="sidebar-nav">
     <button class="sidebar-link active" data-section-link="visao"><span class="icon">◫</span>Visão geral</button>
@@ -38,7 +39,11 @@
 </aside>
 
 <main class="admin-main">
-  <header class="admin-topbar"><div><span class="eyebrow">CENTRAL DE RECRUTAMENTO</span><h1>Gestão Oficial do Processo Seletivo</h1></div><div class="admin-user"><span class="avatar" data-user-avatar>AD</span><div><strong data-user-name>Usuário</strong><small data-user-role>Cargo</small></div></div></header>
+  <header class="admin-topbar">
+    <button class="admin-menu-toggle" type="button" aria-label="Abrir menu do painel" aria-expanded="false" data-sidebar-toggle>
+      <span></span><span></span><span></span>
+    </button>
+    <div><span class="eyebrow">CENTRAL DE RECRUTAMENTO</span><h1>Gestão Oficial do Processo Seletivo</h1></div><div class="admin-user"><span class="avatar" data-user-avatar>AD</span><div><strong data-user-name>Usuário</strong><small data-user-role>Cargo</small></div></div></header>
 
   <section id="visao" class="admin-section active">
     <div class="stats-grid">
@@ -49,7 +54,20 @@
     </div>
     <div class="content-grid">
       <article class="panel-card"><h2>Distribuição das inscrições</h2><p>Visão rápida do funil atual.</p>
-        <div class="bar-list"><div class="bar-row"><header><span>Em análise</span></header><div class="bar"><span data-bar-review></span></div></div><div class="bar-row"><header><span>Aprovados</span></header><div class="bar"><span data-bar-approved></span></div></div><div class="bar-row"><header><span>Reprovados</span></header><div class="bar"><span data-bar-rejected></span></div></div></div>
+        <div class="bar-list">
+          <div class="bar-row">
+            <header><span>Em análise</span><strong data-bar-review-count>0</strong></header>
+            <div class="bar"><span data-bar-review></span></div>
+          </div>
+          <div class="bar-row">
+            <header><span>Aprovados</span><strong data-bar-approved-count>0</strong></header>
+            <div class="bar"><span data-bar-approved></span></div>
+          </div>
+          <div class="bar-row">
+            <header><span>Reprovados</span><strong data-bar-rejected-count>0</strong></header>
+            <div class="bar"><span data-bar-rejected></span></div>
+          </div>
+        </div>
       </article>
       <article class="panel-card"><h2>Ações rápidas</h2><p>Acesse os principais controles.</p><button class="button primary" data-open-candidates>Ver candidatos</button></article>
     </div>
@@ -118,7 +136,12 @@
     <form id="settings-form" class="settings-grid">
       <article class="setting-card"><h3>Recrutamento</h3><div class="switch-row"><span>Inscrições abertas</span><input type="checkbox" name="recruitmentOpen"></div><label class="field"><span>Nota mínima automática</span><input type="number" name="minimumScore" min="0" max="6"></label></article>
       <article class="setting-card"><h3>Reinscrição</h3><label class="field"><span>Prazo após reprovação (dias)</span><input type="number" name="retryDays" min="0"></label><div class="switch-row"><span>Mostrar motivo público detalhado</span><input type="checkbox" name="showPublicReason"></div></article>
-      <article class="setting-card"><h3>Manutenção</h3><p>Remove todas as inscrições cadastradas no sistema.</p><button type="button" class="button danger" data-clear-demo>Excluir todas as inscrições</button></article>
+      <article class="setting-card">
+  <h3>Manutenção</h3>
+  <p>Remove permanentemente todas as inscrições cadastradas. Essa ação não pode ser desfeita.</p>
+  <button type="button" class="button danger" data-clear-demo>Excluir todas as inscrições</button>
+  <small class="muted" data-clear-applications-status></small>
+</article>
       <article class="setting-card"><h3>Salvar alterações</h3><p>As configurações controlam o funcionamento oficial do processo seletivo.</p><button class="button primary" type="submit">Salvar configurações</button></article>
     </form>
   </section>

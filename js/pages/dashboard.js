@@ -15,6 +15,33 @@ document.addEventListener("DOMContentLoaded",async()=>{
   document.querySelectorAll("[data-permission]").forEach(el=>{if(!profile.permissions?.[el.dataset.permission])el.hidden=true});
   document.querySelectorAll("[data-permission-action]").forEach(el=>{if(!profile.permissions?.[el.dataset.permissionAction])el.classList.add("hidden")});
 
+  const sidebar=document.querySelector("[data-sidebar]");
+  const sidebarToggle=document.querySelector("[data-sidebar-toggle]");
+  const sidebarOverlay=document.querySelector("[data-sidebar-overlay]");
+
+  const closeSidebar=()=>{
+    sidebar?.classList.remove("open");
+    sidebarOverlay?.classList.remove("open");
+    sidebarToggle?.classList.remove("active");
+    sidebarToggle?.setAttribute("aria-expanded","false");
+    document.body.classList.remove("admin-menu-open");
+  };
+
+  const openSidebar=()=>{
+    sidebar?.classList.add("open");
+    sidebarOverlay?.classList.add("open");
+    sidebarToggle?.classList.add("active");
+    sidebarToggle?.setAttribute("aria-expanded","true");
+    document.body.classList.add("admin-menu-open");
+  };
+
+  sidebarToggle?.addEventListener("click",()=>{
+    sidebar?.classList.contains("open")?closeSidebar():openSidebar();
+  });
+  sidebarOverlay?.addEventListener("click",closeSidebar);
+  window.addEventListener("resize",()=>{if(window.innerWidth>1000)closeSidebar()});
+
+
   const sections=[...document.querySelectorAll(".admin-section")];
   const links=[...document.querySelectorAll("[data-section-link]")];
   const show=async id=>{
@@ -29,7 +56,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(id==="auditoria")await renderAudit();
     if(id==="configuracoes")await renderSettings();
   };
-  links.forEach(link=>link.addEventListener("click",()=>show(link.dataset.sectionLink)));
+  links.forEach(link=>link.addEventListener("click",async()=>{await show(link.dataset.sectionLink);closeSidebar()}));
   document.querySelector("[data-logout]").addEventListener("click",async()=>{try{await AuditService.write("logout","session",profile.id,null,null)}catch{}await Auth.signOut();location.href="login.html"});
 
   let applications=await ApplicationsService.list();
@@ -39,9 +66,17 @@ document.addEventListener("DOMContentLoaded",async()=>{
     document.querySelector("[data-approved]").textContent=applications.filter(a=>a.status.includes("Aprovado")).length;
     document.querySelector("[data-rejected]").textContent=applications.filter(a=>a.status.includes("Reprovado")).length;
     const total=Math.max(applications.length,1);
-    document.querySelector("[data-bar-review]").style.width=`${applications.filter(a=>a.status==="Em análise").length/total*100}%`;
-    document.querySelector("[data-bar-approved]").style.width=`${applications.filter(a=>a.status.includes("Aprovado")).length/total*100}%`;
-    document.querySelector("[data-bar-rejected]").style.width=`${applications.filter(a=>a.status.includes("Reprovado")).length/total*100}%`;
+    const reviewCount=applications.filter(a=>a.status==="Em análise").length;
+    const approvedCount=applications.filter(a=>a.status.includes("Aprovado")).length;
+    const rejectedCount=applications.filter(a=>a.status.includes("Reprovado")).length;
+
+    document.querySelector("[data-bar-review]").style.width=`${reviewCount/total*100}%`;
+    document.querySelector("[data-bar-approved]").style.width=`${approvedCount/total*100}%`;
+    document.querySelector("[data-bar-rejected]").style.width=`${rejectedCount/total*100}%`;
+
+    document.querySelector("[data-bar-review-count]").textContent=reviewCount;
+    document.querySelector("[data-bar-approved-count]").textContent=approvedCount;
+    document.querySelector("[data-bar-rejected-count]").textContent=rejectedCount;
   };
 
   const renderApplications=async()=>{
@@ -493,7 +528,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     question_created:"Questão criada",
     question_updated:"Questão atualizada",
     question_deleted:"Questão excluída",
-    settings_updated:"Configurações alteradas"
+    settings_updated:"Configurações alteradas",
+    applications_cleared:"Todas as inscrições excluídas"
   }[action]||String(action||"Ação"));
 
   const auditResourceLabel=resource=>({
@@ -559,6 +595,46 @@ document.addEventListener("DOMContentLoaded",async()=>{
     event.preventDefault();const form=event.currentTarget;
     await SettingsService.save({recruitment_open:form.recruitmentOpen.checked,minimum_score:Number(form.minimumScore.value),retry_days:Number(form.retryDays.value),show_public_reason:form.showPublicReason.checked});
     showToast("Configurações salvas.");
+  });
+
+  document.querySelector("[data-clear-demo]")?.addEventListener("click",async event=>{
+    if(!profile.permissions?.settings_manage){
+      showToast("Você não possui permissão para executar esta ação.");
+      return;
+    }
+
+    const firstConfirmation=confirm(
+      `Esta ação excluirá permanentemente ${applications.length} inscrição(ões).\n\nDeseja continuar?`
+    );
+    if(!firstConfirmation)return;
+
+    const typed=prompt('Para confirmar, digite exatamente: EXCLUIR TODAS');
+    if(typed!=="EXCLUIR TODAS"){
+      showToast("Exclusão cancelada.");
+      return;
+    }
+
+    const button=event.currentTarget;
+    const status=document.querySelector("[data-clear-applications-status]");
+    button.disabled=true;
+    button.textContent="Excluindo...";
+    if(status)status.textContent="Processando exclusão no Supabase...";
+
+    try{
+      const deletedCount=await ApplicationsService.deleteAll();
+      applications=[];
+      renderStats();
+      await renderApplications();
+      if(status)status.textContent=`${deletedCount} inscrição(ões) excluída(s).`;
+      showToast(`${deletedCount} inscrição(ões) excluída(s) com sucesso.`);
+    }catch(error){
+      console.error("Erro ao excluir inscrições:",error);
+      if(status)status.textContent="Não foi possível concluir a exclusão.";
+      showToast(error.message||"Erro ao excluir as inscrições.");
+    }finally{
+      button.disabled=false;
+      button.textContent="Excluir todas as inscrições";
+    }
   });
 
   document.querySelector("[data-search]")?.addEventListener("input",renderApplications);
