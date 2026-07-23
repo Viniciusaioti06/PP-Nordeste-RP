@@ -20,6 +20,7 @@
 <script src="js/services/announcements.js"></script>
 <script src="js/services/audit.js"></script>
 <script defer src="js/pages/status.js"></script>
+<link rel="stylesheet" href="css/visual-v3.css">
 </head><body>
 
 <header class="public-header">
@@ -54,4 +55,26 @@
     <p class="muted" data-note></p>
     <a class="button secondary" href="candidato/dashboard.html">Abrir área do candidato</a>
   </section>
-</main></body></html>
+</main>
+
+<dialog class="modal approval-celebration-modal" data-approval-modal>
+  <button class="modal-close" type="button" data-approval-close aria-label="Fechar">×</button>
+  <div class="celebration-badge" aria-hidden="true">★</div>
+  <span class="eyebrow">ETAPA CONCLUÍDA</span>
+  <h2>Parabéns, <span data-approval-name>candidato</span>!</h2>
+  <p class="modal-lead">Você foi aprovado na etapa teórica do processo seletivo.</p>
+  <div class="approval-next-step">
+    <strong>Próxima etapa: teste físico</strong>
+    <p>A convocação, data, horário e demais orientações serão comunicadas no Discord oficial. Entre no servidor e acompanhe os avisos.</p>
+  </div>
+  <div class="modal-actions">
+    <a class="button discord-button" href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Acessar Discord oficial</a>
+    <button class="button secondary" type="button" data-approval-close>Continuar no site</button>
+  </div>
+</dialog>
+<script defer src="js/visual-v3.js"></script>
+<footer class="page-footer enhanced-footer">
+  <div><strong>Polícia Penal Ceará — GTA RP</strong><small>Acompanhe seu processo.</small></div>
+  <div class="footer-links"><a href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord oficial</a><a href="index.html">Página inicial</a></div>
+</footer>
+</body></html>

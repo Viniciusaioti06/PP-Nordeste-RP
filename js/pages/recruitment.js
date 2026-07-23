@@ -140,7 +140,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const created = await ApplicationsService.submit(payload);
       document.querySelector("[data-protocol]").textContent = created.protocol;
-      document.querySelector("#success-modal").showModal();
+      const successModal=document.querySelector("#success-modal");
+      successModal.showModal();
+      successModal.classList.add("is-celebrating");
+      window.setTimeout(()=>successModal.classList.remove("is-celebrating"),1400);
       form.reset();
       current=0;
       render();
@@ -150,5 +153,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   document.querySelector("[data-close-modal]").addEventListener("click",()=>document.querySelector("#success-modal").close());
+
+  document.querySelector("[data-copy-protocol]")?.addEventListener("click",async event=>{
+    const protocol=document.querySelector("[data-protocol]")?.textContent?.trim();
+    if(!protocol)return;
+    try{
+      await navigator.clipboard.writeText(protocol);
+      const button=event.currentTarget;
+      const original=button.textContent;
+      button.textContent="Protocolo copiado!";
+      button.classList.add("copied");
+      window.setTimeout(()=>{button.textContent=original;button.classList.remove("copied")},1800);
+    }catch{
+      showToast("Copie o protocolo manualmente.");
+    }
+  });
+
   render();
 });

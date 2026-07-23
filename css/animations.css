@@ -1,5 +1,15 @@
 
-.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
-.reveal.visible{opacity:1;transform:none}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(121,180,76,.25)}50%{box-shadow:0 0 0 12px rgba(121,180,76,0)}}
+.reveal{
+  opacity:0;
+  transform:translateY(24px);
+  filter:blur(3px);
+  transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1),filter .7s ease
+}
+.reveal.visible{opacity:1;transform:none;filter:none}
+.timeline-grid .reveal:nth-child(2),.feature-grid .reveal:nth-child(2){transition-delay:.08s}
+.timeline-grid .reveal:nth-child(3),.feature-grid .reveal:nth-child(3){transition-delay:.16s}
+.timeline-grid .reveal:nth-child(4){transition-delay:.24s}
+.timeline-grid .reveal:nth-child(5){transition-delay:.32s}
+.timeline-grid .reveal:nth-child(6){transition-delay:.4s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(25,180,107,.3)}50%{box-shadow:0 0 0 13px rgba(25,180,107,0)}}

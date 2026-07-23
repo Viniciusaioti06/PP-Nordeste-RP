@@ -20,6 +20,7 @@
 <script src="js/services/announcements.js"></script>
 <script src="js/services/audit.js"></script>
 <script defer src="js/pages/recruitment.js"></script>
+<link rel="stylesheet" href="css/visual-v3.css">
 </head><body>
 
 <header class="public-header">
@@ -68,6 +69,32 @@
     </form>
   </section>
 </main>
-<dialog id="success-modal" class="modal"><button class="modal-close" data-close-modal>×</button><span class="eyebrow">INSCRIÇÃO REGISTRADA</span><h2>Questionário enviado com sucesso</h2><p class="muted">Guarde o protocolo abaixo para acompanhar sua situação.</p><h1 data-protocol></h1><a class="button primary" href="status.html">Consultar status</a></dialog>
-<footer class="page-footer"><span>Polícia Penal Ceará — GTA RP</span><span>Processo seletivo</span></footer>
+<dialog id="success-modal" class="modal success-experience-modal">
+  <button class="modal-close" type="button" data-close-modal aria-label="Fechar">×</button>
+  <div class="success-orbit" aria-hidden="true"><span>✓</span></div>
+  <span class="eyebrow">INSCRIÇÃO REGISTRADA</span>
+  <h2>Questionário enviado com sucesso!</h2>
+  <p class="modal-lead">Sua prova teórica foi recebida. Guarde o protocolo abaixo para acompanhar todas as etapas.</p>
+  <div class="protocol-box">
+    <small>SEU PROTOCOLO</small>
+    <strong data-protocol></strong>
+    <button class="copy-protocol-button" type="button" data-copy-protocol>Copiar protocolo</button>
+  </div>
+  <div class="discord-notice">
+    <span class="discord-notice-icon">◉</span>
+    <div>
+      <strong>Entre no Discord e acompanhe os avisos</strong>
+      <p>As convocações, orientações e informações sobre o teste físico serão divulgadas por lá. Ative as notificações e fique atento.</p>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <a class="button discord-button" href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Entrar no Discord</a>
+    <a class="button secondary" href="status.html">Consultar status</a>
+  </div>
+</dialog>
+<footer class="page-footer enhanced-footer">
+  <div><strong>Polícia Penal Ceará — GTA RP</strong><small>Processo seletivo oficial.</small></div>
+  <div class="footer-links"><a href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord oficial</a><a href="status.html">Consultar status</a></div>
+</footer>
+<script defer src="js/visual-v3.js"></script>
 </body></html>
