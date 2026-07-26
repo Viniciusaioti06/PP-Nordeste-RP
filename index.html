@@ -1,116 +1,283 @@
-<!doctype html><html lang="pt-BR"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Polícia Penal | Processo Seletivo</title>
-<link rel="stylesheet" href="css/variables.css">
-<link rel="stylesheet" href="css/global.css">
-<link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/animations.css">
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090a08">
+  <title>Polícia Penal | Processo Seletivo</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/visual-v3.css">
+  <link rel="stylesheet" href="css/landing-reference.css">
 
-<link rel="stylesheet" href="css/landing.css">
-<script defer src="js/app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase/config.js"></script>
-<script src="js/core/utils.js"></script>
-<script src="js/core/supabase-health.js"></script>
-<script src="js/core/auth.js"></script>
-<script src="js/services/applications.js"></script>
-<script src="js/services/questions.js"></script>
-<script src="js/services/staff.js"></script>
-<script src="js/services/settings.js"></script>
-<script src="js/services/announcements.js"></script>
-<script src="js/services/audit.js"></script>
-<link rel="stylesheet" href="css/visual-v3.css">
-</head><body>
+  <script defer src="js/app.js"></script>
+  <script defer src="js/landing-reference.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase/config.js"></script>
+  <script src="js/core/utils.js"></script>
+  <script src="js/core/supabase-health.js"></script>
+  <script src="js/core/auth.js"></script>
+  <script src="js/services/applications.js"></script>
+  <script src="js/services/questions.js"></script>
+  <script src="js/services/staff.js"></script>
+  <script src="js/services/settings.js"></script>
+  <script src="js/services/announcements.js"></script>
+  <script src="js/services/audit.js"></script>
+<link rel="stylesheet" href="css/institutional-pages.css">
+</head>
+<body class="reference-landing">
 
-<header class="public-header">
-  <a class="brand" href="index.html">
-    <span class="brand-mark"><img class="brand-logo-image" src="assets/images/logo-policia-penal-ceara.png" alt="Logo Polícia Penal Ceará"></span>
-    <span class="brand-copy"><strong>Polícia Penal Ceará</strong><small>Portal de Recrutamento</small></span>
+<header class="public-header reference-header">
+  <a class="brand reference-brand" href="index.html" aria-label="Página inicial">
+    <span class="reference-brand-emblem">
+      <img src="assets/images/brasao-policia-penal.png" alt="Brasão da Polícia Penal">
+    </span>
+    <span class="brand-copy">
+      <strong>Polícia Penal</strong>
+      <small>Nordeste Roleplay</small>
+    </span>
   </a>
-  <nav class="public-nav">
-    <a href="index.html#processo">Processo seletivo</a>
+
+  <nav class="public-nav reference-nav" aria-label="Navegação principal">
+    <a href="#inicio">Início</a>
+    <a href="#processo">Processo seletivo</a>
     <a href="recrutamento.html">Inscrição</a>
     <a href="status.html">Consultar status</a>
-    <a href="#contato">Discord</a>
   </nav>
-  <button class="mobile-menu" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="public-mobile-nav"><span></span><span></span><span></span></button>
+
+  <a class="header-discord" href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord</a>
+
+  <button class="mobile-menu" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="public-mobile-nav">
+    <span></span><span></span><span></span>
+  </button>
 </header>
-<nav class="mobile-nav" id="public-mobile-nav">
-  <a href="index.html#processo">Processo seletivo</a>
+
+<nav class="mobile-nav reference-mobile-nav" id="public-mobile-nav">
+  <a href="#inicio">Início</a>
+  <a href="#processo">Processo seletivo</a>
   <a href="recrutamento.html">Inscrição</a>
   <a href="status.html">Consultar status</a>
-  <a href="#contato">Discord</a>
+  <a href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord oficial</a>
 </nav>
 
 <main>
-  <section class="container hero">
-    <div class="reveal">
-      <span class="eyebrow">PROCESSO SELETIVO OFICIAL</span>
-      <h1>Seu compromisso começa antes da farda.</h1>
-      <p>Uma plataforma completa para seleção, triagem e acompanhamento dos candidatos interessados em ingressar na Polícia Penal dentro do GTA RP.</p>
-      <div class="hero-actions">
-        <a class="button primary" href="recrutamento.html">Iniciar recrutamento</a>
-        <a class="button secondary" href="status.html">Consultar inscrição</a>
+  <section class="reference-hero" id="inicio">
+    <div class="reference-hero-noise"></div>
+    <div class="reference-hero-lines" aria-hidden="true"></div>
+
+    <div class="reference-hero-copy">
+      <div class="hero-kicker reveal">
+        <span></span>
+        Processo seletivo oficial
       </div>
-    </div>
-    <aside class="hero-panel card reveal">
-      <div class="hero-panel-top"><span class="live-dot"></span><div><small class="muted">Situação atual</small><strong style="display:block">Inscrições abertas</strong></div></div>
-      <ul><li>Questionário em etapas</li><li>Triagem automática e manual</li><li>Protocolo de acompanhamento</li><li>Teste físico e progressão</li></ul>
-    </aside>
-  </section>
 
-  <section id="processo" class="container timeline-section">
-    <div class="section-title reveal"><span class="eyebrow">FLUXO DO CANDIDATO</span><h2>Processo seletivo</h2><p>Processo composto por sucessivas etapas de avaliação.</p></div>
-    <div class="timeline-grid">
-      <article class="timeline-card reveal"><b>01</b><h3>Cadastro</h3><p>Identificação do personagem, Discord, passaporte e disponibilidade.</p></article>
-      <article class="timeline-card reveal"><b>02</b><h3>Questionário</h3><p>Conhecimento, ética, hierarquia e situações práticas de roleplay.</p></article>
-      <article class="timeline-card reveal"><b>03</b><h3>Triagem</h3><p>Pontuação automática e verificação de critérios eliminatórios.</p></article>
-      <article class="timeline-card reveal"><b>04</b><h3>Teste físico</h3><p>Convocação coletiva divulgada pelo Discord para os aprovados no teste teórico.</p></article>
-      <article class="timeline-card reveal"><b>05</b><h3>Curso</h3><p>Treinamento, procedimentos e preparação para o serviço.</p></article>
-      <article class="timeline-card reveal"><b>06</b><h3>Formatura</h3><p>Conclusão do processo e ingresso oficial na corporação.</p></article>
-    </div>
-  </section>
+      <h1 class="reveal">
+        Disciplina.<br>
+        Hierarquia.<br>
+        <em>Compromisso.</em>
+      </h1>
 
-  <section class="container feature-section">
-    <div class="section-title reveal"><span class="eyebrow">PROCESSO COMPLETO</span><h2>Seriedade e eficiência.</h2></div>
-    <div class="feature-grid">
-      <article class="feature-card card reveal"><span>◈</span><h3>Triagem inteligente</h3><p>Classificação inicial por pontuação, critérios eliminatórios e respostas abertas.</p></article>
-      <article class="feature-card card reveal"><span>◎</span><h3>Acompanhamento</h3><p>Consulta segura por protocolo e passaporte, com histórico da inscrição.</p></article>
-      <article class="feature-card card reveal"><span>▣</span><h3>Painel interno</h3><p>Recrutadores analisam candidatos, registram observações e tomam decisões.</p></article>
-    </div>
-    <div class="cta card reveal"><div><span class="eyebrow">PRONTO PARA COMEÇAR?</span><h2>Faça sua inscrição com atenção.</h2><p class="muted">Respostas copiadas, falsas ou incompatíveis podem resultar em reprovação.</p></div><a class="button primary" href="recrutamento.html">Acessar formulário</a></div>
-  </section>
+      <p class="reveal">
+        O início de uma trajetória construída com responsabilidade, postura e respeito às normas da Polícia Penal dentro do Nordeste Roleplay.
+      </p>
 
-  <section class="container discord-section reveal" id="contato">
-    <article class="discord-card">
-      <div class="discord-card-glow"></div>
-      <div class="discord-copy">
-        <span class="eyebrow">COMUNIDADE OFICIAL</span>
-        <h2>Fique conectado ao processo seletivo.</h2>
-        <p>Convocações, orientações, avisos e informações sobre o teste físico serão divulgados em nosso Discord oficial.</p>
-        <div class="discord-benefits">
-          <span>✓ Avisos oficiais</span>
-          <span>✓ Convocações do teste físico</span>
-          <span>✓ Suporte da equipe</span>
+      <div class="reference-hero-actions reveal">
+        <a class="reference-primary-action" href="recrutamento.html">
+          Iniciar inscrição
+          <span>↗</span>
+        </a>
+        <a class="reference-text-action" href="status.html">Consultar candidatura</a>
+      </div>
+
+      <div class="reference-hero-meta reveal">
+        <div>
+          <strong>06</strong>
+          <span>etapas de avaliação</span>
+        </div>
+        <div>
+          <strong>100%</strong>
+          <span>processo digital</span>
+        </div>
+        <div>
+          <strong>24h</strong>
+          <span>consulta disponível</span>
         </div>
       </div>
-      <div class="discord-action">
-        <span class="discord-icon" aria-hidden="true">◉</span>
-        <strong>Discord Polícia Penal</strong>
-        <small>Entre e acompanhe os comunicados.</small>
-        <a class="button discord-button" href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Entrar no Discord</a>
+    </div>
+
+    <div class="reference-hero-visual reveal">
+      <div class="visual-gold-disc"></div>
+      <div class="visual-outline-text" aria-hidden="true">PENAL</div>
+      <img class="hero-officer-back" src="assets/images/policial-costas.png" alt="Agente da Polícia Penal visto de costas">
+      <div class="visual-status-card">
+        <span class="status-pulse"></span>
+        <div>
+          <small>Situação atual</small>
+          <strong>Inscrições abertas</strong>
+        </div>
       </div>
-    </article>
+      <div class="visual-scroll-hint">
+        <span></span>
+        role para explorar
+      </div>
+    </div>
   </section>
 
+  <section class="reference-marquee" aria-label="Valores institucionais">
+    <div class="marquee-track">
+      <span>Disciplina</span><i>✦</i>
+      <span>Hierarquia</span><i>✦</i>
+      <span>Responsabilidade</span><i>✦</i>
+      <span>Compromisso</span><i>✦</i>
+      <span>Disciplina</span><i>✦</i>
+      <span>Hierarquia</span><i>✦</i>
+      <span>Responsabilidade</span><i>✦</i>
+      <span>Compromisso</span><i>✦</i>
+    </div>
+  </section>
+
+  <section class="reference-intro container reveal">
+    <div class="reference-section-number">01</div>
+    <div class="reference-intro-copy">
+      <span class="eyebrow">SOBRE O RECRUTAMENTO</span>
+      <h2>Não buscamos apenas candidatos. Buscamos postura.</h2>
+    </div>
+    <p>
+      Cada etapa foi estruturada para avaliar conhecimento, maturidade, tomada de decisão e capacidade de atuar em equipe. O processo é claro, organizado e acompanhado por protocolo individual.
+    </p>
+  </section>
+
+  <section class="reference-process" id="processo">
+    <div class="container">
+      <div class="reference-process-heading reveal">
+        <div>
+          <span class="eyebrow">PROCESSO SELETIVO</span>
+          <h2>Uma trajetória.<br>Seis etapas.</h2>
+        </div>
+        <p>Avance por cada fase demonstrando preparo, coerência e respeito aos procedimentos da corporação.</p>
+      </div>
+
+      <div class="reference-process-list">
+        <article class="process-line reveal">
+          <span class="process-index">01</span>
+          <div><h3>Cadastro</h3><p>Dados do personagem, passaporte, Discord e disponibilidade.</p></div>
+          <span class="process-arrow">↗</span>
+        </article>
+        <article class="process-line reveal">
+          <span class="process-index">02</span>
+          <div><h3>Prova teórica</h3><p>Conhecimento, conduta, hierarquia e situações práticas de roleplay.</p></div>
+          <span class="process-arrow">↗</span>
+        </article>
+        <article class="process-line reveal">
+          <span class="process-index">03</span>
+          <div><h3>Triagem</h3><p>Avaliação automática e análise interna da equipe de recrutamento.</p></div>
+          <span class="process-arrow">↗</span>
+        </article>
+        <article class="process-line reveal">
+          <span class="process-index">04</span>
+          <div><h3>Teste físico</h3><p>Convocação coletiva e orientações divulgadas no Discord oficial.</p></div>
+          <span class="process-arrow">↗</span>
+        </article>
+        <article class="process-line reveal">
+          <span class="process-index">05</span>
+          <div><h3>Curso de formação</h3><p>Treinamento, procedimentos e preparação para o exercício da função.</p></div>
+          <span class="process-arrow">↗</span>
+        </article>
+        <article class="process-line reveal">
+          <span class="process-index">06</span>
+          <div><h3>Formatura</h3><p>Conclusão do processo e ingresso oficial na Polícia Penal.</p></div>
+          <span class="process-arrow">↗</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="reference-feature-story">
+    <div class="feature-story-image reveal">
+      <img src="assets/images/policial-corredor.png" alt="Agente da Polícia Penal em corredor iluminado">
+      <div class="feature-story-index">02</div>
+    </div>
+    <div class="feature-story-copy reveal">
+      <span class="eyebrow">PREPARAÇÃO E CONDUTA</span>
+      <h2>A farda representa mais do que autoridade.</h2>
+      <p>
+        Ela representa responsabilidade, controle e compromisso com o coletivo. Por isso, cada decisão durante o processo seletivo importa.
+      </p>
+      <ul>
+        <li><span>01</span>Respeito à hierarquia</li>
+        <li><span>02</span>Conhecimento dos procedimentos</li>
+        <li><span>03</span>Coerência nas decisões</li>
+        <li><span>04</span>Postura durante o roleplay</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="reference-advantages container">
+    <div class="reference-section-heading reveal">
+      <span class="eyebrow">PLATAFORMA OFICIAL</span>
+      <h2>Clareza em todas as etapas.</h2>
+    </div>
+    <div class="reference-advantage-grid">
+      <article class="reference-advantage reveal">
+        <span>01</span>
+        <h3>Triagem inteligente</h3>
+        <p>Pontuação automática, critérios eliminatórios e análise individual.</p>
+      </article>
+      <article class="reference-advantage reveal">
+        <span>02</span>
+        <h3>Acompanhamento</h3>
+        <p>Consulta segura por protocolo e passaporte, com histórico atualizado.</p>
+      </article>
+      <article class="reference-advantage reveal">
+        <span>03</span>
+        <h3>Comunicação oficial</h3>
+        <p>Avisos e convocações centralizados no portal e no Discord.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="reference-discord" id="contato">
+    <div class="reference-discord-background" aria-hidden="true">DISCORD</div>
+    <img class="reference-discord-emblem" src="assets/images/brasao-policia-penal.png" alt="">
+    <div class="reference-discord-copy reveal">
+      <span class="eyebrow">COMUNIDADE OFICIAL</span>
+      <h2>O próximo aviso pode definir sua próxima etapa.</h2>
+      <p>Entre no Discord, ative as notificações e acompanhe convocações, datas e orientações do recrutamento.</p>
+      <a class="reference-discord-action" href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">
+        Entrar no Discord
+        <span>↗</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="reference-final-cta container reveal">
+    <span class="eyebrow">PRONTO PARA COMEÇAR?</span>
+    <h2>Seu compromisso começa antes da farda.</h2>
+    <div>
+      <a class="reference-primary-action" href="recrutamento.html">Realizar inscrição <span>↗</span></a>
+      <a class="reference-text-action" href="status.html">Já me inscrevi</a>
+    </div>
+  </section>
 </main>
-<footer class="page-footer enhanced-footer">
-  <div><strong>Polícia Penal Ceará — GTA RP</strong><small>Portal oficial de recrutamento.</small></div>
-  <div class="footer-links">
-    <a href="index.html#processo">Processo seletivo</a>
-    <a href="status.html">Consultar status</a>
+
+<footer class="reference-footer">
+  <div class="reference-footer-brand">
+    <img src="assets/images/brasao-policia-penal.png" alt="Brasão da Polícia Penal">
+    <div><strong>Polícia Penal</strong><small>Nordeste Roleplay</small></div>
+  </div>
+  <div class="reference-footer-links">
+    <a href="#inicio">Início</a>
+    <a href="#processo">Processo seletivo</a>
+    <a href="recrutamento.html">Inscrição</a>
+    <a href="status.html">Status</a>
     <a href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord</a>
   </div>
+  <small>Portal oficial de recrutamento — GTA RP</small>
 </footer>
+
 <script defer src="js/visual-v3.js"></script>
-</body></html>
+</body>
+</html>

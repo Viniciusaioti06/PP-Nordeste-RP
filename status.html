@@ -21,41 +21,102 @@
 <script src="js/services/audit.js"></script>
 <script defer src="js/pages/status.js"></script>
 <link rel="stylesheet" href="css/visual-v3.css">
-</head><body>
+<link rel="stylesheet" href="css/institutional-pages.css">
+<link rel="stylesheet" href="css/landing-reference.css">
+</head><body class="institutional-page">
 
-<header class="public-header">
-  <a class="brand" href="index.html">
-    <span class="brand-mark"><img class="brand-logo-image" src="assets/images/logo-policia-penal-ceara.png" alt="Logo Polícia Penal Ceará"></span>
-    <span class="brand-copy"><strong>Polícia Penal Ceará</strong><small>Portal de Recrutamento</small></span>
+<header class="public-header reference-header">
+  <a class="brand reference-brand" href="index.html" aria-label="Página inicial">
+    <span class="reference-brand-emblem">
+      <img src="assets/images/brasao-policia-penal.png" alt="Brasão da Polícia Penal">
+    </span>
+    <span class="brand-copy">
+      <strong>Polícia Penal</strong>
+      <small>Nordeste Roleplay</small>
+    </span>
   </a>
-  <nav class="public-nav">
+
+  <nav class="public-nav reference-nav" aria-label="Navegação principal">
+    <a href="index.html#inicio">Início</a>
     <a href="index.html#processo">Processo seletivo</a>
     <a href="recrutamento.html">Inscrição</a>
-    <a href="status.html">Consultar status</a>
+    <a class="active" href="status.html">Consultar status</a>
   </nav>
-  <button class="mobile-menu" aria-label="Abrir menu"><span></span><span></span><span></span></button>
+
+  <a class="header-discord" href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord</a>
+
+  <button class="mobile-menu" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="public-mobile-nav">
+    <span></span><span></span><span></span>
+  </button>
 </header>
-<nav class="mobile-nav">
+<nav class="mobile-nav reference-mobile-nav" id="public-mobile-nav">
+  <a href="index.html#inicio">Início</a>
   <a href="index.html#processo">Processo seletivo</a>
   <a href="recrutamento.html">Inscrição</a>
-  <a href="status.html">Consultar status</a>
+  <a class="active" href="status.html">Consultar status</a>
+  <a href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord oficial</a>
 </nav>
 
-<main class="container lookup-layout">
-  <section class="lookup-card card">
-    <span class="eyebrow">ACOMPANHAMENTO</span><h1>Consulte sua inscrição.</h1><p>Use o protocolo recebido no envio e o passaporte informado no cadastro.</p>
-    <form id="status-form"><label class="field"><span>Protocolo</span><input name="protocol" placeholder="PP-2026-0001" required><small class="error"></small></label>
-    <label class="field"><span>Passaporte / ID</span><input name="passport" required><small class="error"></small></label>
-    <button class="button primary" type="submit">Consultar situação</button></form>
+<section class="institutional-page-banner status-banner">
+  <div class="institutional-banner-grid"></div>
+  <div class="institutional-banner-copy">
+    <span class="institutional-index">02</span>
+    <div><span class="eyebrow">ACOMPANHAMENTO</span><h1>Consulte sua trajetória.</h1><p>Acompanhe decisões, avisos e o avanço entre as etapas.</p></div>
+  </div>
+  <img src="assets/images/brasao-policia-penal.png" alt="" aria-hidden="true">
+</section>
+
+
+
+<main class="container status-page-layout">
+  <section class="status-query-panel">
+    <div class="status-query-heading">
+      <span class="eyebrow">ACOMPANHAMENTO</span>
+      <h2>Consulte sua inscrição</h2>
+      <p>Use o protocolo recebido no envio e o passaporte informado no cadastro.</p>
+    </div>
+
+    <form id="status-form" class="status-query-form">
+      <label class="field">
+        <span>Protocolo</span>
+        <input name="protocol" placeholder="PP-2026-0001" required>
+        <small class="error"></small>
+      </label>
+
+      <label class="field">
+        <span>Passaporte / ID</span>
+        <input name="passport" required>
+        <small class="error"></small>
+      </label>
+
+      <button class="button primary status-submit-button" type="submit">
+        Consultar situação
+      </button>
+    </form>
   </section>
-  <section class="lookup-result card hidden" data-result>
-    <div class="result-top"><div><span class="eyebrow">RESULTADO</span><h2 data-name></h2></div><span class="status-pill" data-status></span></div>
-    <div class="result-data"><div><span>Protocolo</span><strong data-protocol></strong></div><div><span>Passaporte</span><strong data-passport></strong></div><div><span>Enviado em</span><strong data-created></strong></div><div><span>Última atualização</span><strong data-updated></strong></div></div>
+
+  <section class="lookup-result status-result-panel hidden" data-result>
+    <div class="result-top">
+      <div>
+        <span class="eyebrow">RESULTADO</span>
+        <h2 data-name></h2>
+      </div>
+      <span class="status-pill" data-status></span>
+    </div>
+
+    <div class="result-data">
+      <div><span>Protocolo</span><strong data-protocol></strong></div>
+      <div><span>Passaporte</span><strong data-passport></strong></div>
+      <div><span>Enviado em</span><strong data-created></strong></div>
+      <div><span>Última atualização</span><strong data-updated></strong></div>
+    </div>
+
     <div class="status-timeline" data-timeline></div>
     <p class="muted" data-note></p>
     <a class="button secondary" href="candidato/dashboard.html">Abrir área do candidato</a>
   </section>
 </main>
+
 
 <dialog class="modal approval-celebration-modal" data-approval-modal>
   <button class="modal-close" type="button" data-approval-close aria-label="Fechar">×</button>
@@ -73,8 +134,12 @@
   </div>
 </dialog>
 <script defer src="js/visual-v3.js"></script>
-<footer class="page-footer enhanced-footer">
-  <div><strong>Polícia Penal Ceará — GTA RP</strong><small>Acompanhe seu processo.</small></div>
-  <div class="footer-links"><a href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord oficial</a><a href="index.html">Página inicial</a></div>
+
+
+<footer class="institutional-inner-footer">
+  <div class="institutional-footer-brand"><img src="assets/images/brasao-policia-penal.png" alt=""><div><strong>Polícia Penal</strong><small>Nordeste Roleplay</small></div></div>
+  <div><a href="index.html">Página inicial</a><a href="https://discord.gg/hBepfKRUYG" target="_blank" rel="noopener noreferrer">Discord oficial</a></div>
 </footer>
+
+<script defer src="js/institutional-pages.js"></script>
 </body></html>

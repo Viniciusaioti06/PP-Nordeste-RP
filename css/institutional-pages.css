@@ -1,0 +1,745 @@
+
+/* ============================================================
+   Institutional design system — internal/public pages
+   Visual layer only. No backend behavior is changed.
+   ============================================================ */
+.institutional-page{
+  --inst-bg:#090a08;
+  --inst-panel:#11110d;
+  --inst-panel-2:#15150f;
+  --inst-gold:#c8a544;
+  --inst-gold-light:#e5cc78;
+  --inst-line:rgba(200,165,68,.2);
+  --inst-muted:#9f9989;
+  background:
+    radial-gradient(circle at 85% 8%,rgba(200,165,68,.08),transparent 25rem),
+    #090a08;
+  color:#f2eee2;
+}
+.institutional-page::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.11;
+  background-image:
+    linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);
+  background-size:62px 62px;
+}
+.institutional-header{
+  width:min(1400px,calc(100% - 48px));
+  height:88px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  background:rgba(9,10,8,.78);
+  backdrop-filter:blur(18px);
+}
+.institutional-brand{gap:13px}
+.institutional-brand-emblem{
+  width:45px;height:54px;display:grid;place-items:center;overflow:hidden;
+}
+.institutional-brand-emblem img{
+  width:100%;height:100%;object-fit:contain;background:transparent;padding:0;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.38));
+}
+.institutional-brand .brand-copy strong{
+  color:#f1ede1;text-transform:uppercase;letter-spacing:.09em;font-size:.92rem
+}
+.institutional-brand .brand-copy small{
+  text-transform:uppercase;letter-spacing:.16em;font-size:.58rem;color:#8e8879
+}
+.institutional-nav{gap:30px}
+.institutional-nav a{
+  color:#aaa495;text-transform:uppercase;letter-spacing:.11em;font-size:.68rem
+}
+.institutional-nav a:hover{color:var(--inst-gold-light)}
+
+.institutional-page-banner{
+  position:relative;min-height:320px;overflow:hidden;border-bottom:1px solid var(--inst-line);
+  display:flex;align-items:flex-end;
+  background:
+    radial-gradient(circle at 78% 45%,rgba(200,165,68,.12),transparent 19rem),
+    linear-gradient(110deg,#090a08,#12120e);
+}
+.institutional-banner-grid{
+  position:absolute;inset:0;opacity:.2;
+  background:
+    linear-gradient(90deg,transparent 49.9%,rgba(200,165,68,.14) 50%,transparent 50.1%),
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:auto,64px 64px,64px 64px;
+}
+.institutional-banner-copy{
+  position:relative;z-index:2;width:min(1240px,calc(100% - 48px));margin:auto;padding:105px 0 46px;
+  display:grid;grid-template-columns:90px 1fr;gap:28px;align-items:start
+}
+.institutional-index{color:var(--inst-gold);font-size:.7rem;font-weight:900;letter-spacing:.16em;margin-top:9px}
+.institutional-banner-copy h1{
+  font-size:clamp(2.7rem,5vw,5.8rem);line-height:.9;letter-spacing:-.065em;
+  text-transform:uppercase;margin:12px 0 14px;max-width:820px
+}
+.institutional-banner-copy p{color:var(--inst-muted);margin:0;font-size:.96rem}
+.institutional-page-banner>img{
+  position:absolute;right:max(2vw,20px);bottom:-80px;max-height:390px;max-width:360px;
+  object-fit:contain;opacity:.18;filter:grayscale(.15) sepia(.15) drop-shadow(0 28px 40px rgba(0,0,0,.45))
+}
+.recruitment-banner>img{opacity:.28;bottom:-55px}
+.status-banner>img,.candidate-banner>img{max-height:300px;right:9%;bottom:-50px;opacity:.09}
+
+/* Forms */
+.institutional-page .form-page{padding:60px 0 30px}
+.institutional-page .form-shell{
+  border:1px solid var(--inst-line);border-radius:0;
+  background:linear-gradient(145deg,rgba(200,165,68,.025),rgba(255,255,255,.01)),rgba(16,16,12,.86);
+  box-shadow:0 36px 100px rgba(0,0,0,.26);backdrop-filter:blur(15px)
+}
+.institutional-page .form-header{
+  padding:34px 38px;border-bottom:1px solid var(--inst-line);
+  background:linear-gradient(90deg,rgba(200,165,68,.055),transparent)
+}
+.institutional-page .form-header h1{
+  font-size:clamp(2.4rem,4.5vw,4.8rem);text-transform:uppercase;line-height:.92;letter-spacing:-.06em
+}
+.institutional-page .step-count{
+  border-radius:0;border-color:var(--inst-line);text-transform:uppercase;letter-spacing:.1em;font-size:.65rem
+}
+.institutional-page .progress{height:4px;background:rgba(255,255,255,.035)}
+.institutional-page .progress span{background:linear-gradient(90deg,var(--inst-gold),var(--inst-gold-light))}
+.institutional-page .form-content{padding:40px}
+.institutional-page .step-heading{
+  padding-left:20px;border-left:2px solid var(--inst-gold);margin-bottom:32px
+}
+.institutional-page .step-heading h2{text-transform:uppercase;letter-spacing:-.035em;font-size:2rem}
+.institutional-page .field>span{color:#d5cfbf;text-transform:uppercase;font-size:.66rem;letter-spacing:.1em}
+.institutional-page .field input,
+.institutional-page .field textarea,
+.institutional-page .field select,
+.institutional-page .toolbar input,
+.institutional-page .toolbar select{
+  border-radius:0;border-color:rgba(200,165,68,.14);background:#0d0e0b
+}
+.institutional-page .field input:focus,
+.institutional-page .field textarea:focus,
+.institutional-page .field select:focus{
+  border-color:var(--inst-gold);box-shadow:inset 3px 0 0 var(--inst-gold),0 0 0 3px rgba(200,165,68,.07)
+}
+.institutional-page .question-card{
+  border-radius:0;border-color:rgba(200,165,68,.15);background:#0d0e0b;padding:24px
+}
+.institutional-page .question-card label{
+  border-radius:0;border:1px solid transparent;transition:.2s ease
+}
+.institutional-page .question-card label:hover{border-color:rgba(200,165,68,.18);transform:translateX(3px)}
+.institutional-page .question-card label:has(input:checked){
+  outline:none;border-color:var(--inst-gold);box-shadow:inset 3px 0 0 var(--inst-gold)
+}
+.institutional-page .check-row{border-radius:0;background:#0d0e0b}
+.institutional-page .form-actions{border-color:var(--inst-line)}
+.institutional-page .button{border-radius:0;text-transform:uppercase;letter-spacing:.07em;font-size:.72rem}
+.institutional-page .button.primary{background:var(--inst-gold);color:#111}
+.institutional-page .button.primary:hover{background:var(--inst-gold-light)}
+
+/* Status and candidate */
+.institutional-page .lookup-layout{
+  grid-template-columns:minmax(320px,.7fr) minmax(0,1.3fr);
+  gap:1px;padding:70px 0;
+  background:var(--inst-line)
+}
+.institutional-page .lookup-card,
+.institutional-page .lookup-result{
+  border-radius:0;border:0;background:#10110d;padding:38px;box-shadow:none
+}
+.institutional-page .lookup-card{background:linear-gradient(145deg,rgba(200,165,68,.06),transparent),#11110d}
+.institutional-page .lookup-card h1{
+  text-transform:uppercase;font-size:clamp(2.6rem,4vw,4.7rem);line-height:.92;letter-spacing:-.06em
+}
+.institutional-page .result-top{padding-bottom:25px;border-bottom:1px solid var(--inst-line)}
+.institutional-page .result-top h2{text-transform:uppercase;font-size:2rem}
+.institutional-page .result-data div{
+  border-radius:0;background:#0c0d0a;border-color:rgba(200,165,68,.13)
+}
+.institutional-page .result-data span{text-transform:uppercase;letter-spacing:.09em}
+.institutional-page .status-timeline{border-color:var(--inst-line)}
+.institutional-page .status-item:before{background:var(--inst-gold)}
+.institutional-page .announcement-card{
+  border-radius:0;border-color:rgba(200,165,68,.15);background:#0c0d0a
+}
+.institutional-inner-footer{
+  width:min(1240px,calc(100% - 48px));margin:70px auto 0;padding:32px 0;
+  display:flex;justify-content:space-between;align-items:center;gap:25px;
+  border-top:1px solid var(--inst-line)
+}
+.institutional-footer-brand{display:flex;align-items:center;gap:12px}
+.institutional-footer-brand img{width:42px;height:50px;object-fit:contain}
+.institutional-footer-brand div{display:grid}
+.institutional-footer-brand strong{text-transform:uppercase;letter-spacing:.09em;font-size:.82rem}
+.institutional-footer-brand small{text-transform:uppercase;letter-spacing:.13em;font-size:.57rem;color:#837e70}
+.institutional-inner-footer>div:last-child{display:flex;gap:22px}
+.institutional-inner-footer a{text-transform:uppercase;letter-spacing:.09em;font-size:.65rem;color:#aaa494}
+.institutional-inner-footer a:hover{color:var(--inst-gold-light)}
+
+/* Login / bootstrap */
+.institutional-page .login-screen{
+  min-height:100dvh;grid-template-columns:1.05fr .95fr;background:#090a08
+}
+.institutional-page .login-visual{
+  position:relative;overflow:hidden;padding:46px max(28px,6vw);
+  background:
+    linear-gradient(90deg,rgba(8,9,7,.2),rgba(8,9,7,.8)),
+    linear-gradient(180deg,rgba(8,9,7,.1),rgba(8,9,7,.88)),
+    url("../assets/images/policial-corredor.png") center/cover no-repeat;
+  border-right:1px solid var(--inst-line)
+}
+.institutional-page .login-visual::after{
+  content:"PENAL";position:absolute;right:-20px;bottom:0;
+  color:transparent;-webkit-text-stroke:1px rgba(200,165,68,.12);
+  font-size:clamp(7rem,14vw,13rem);font-weight:950;letter-spacing:-.08em
+}
+.institutional-page .login-visual>*{position:relative;z-index:2}
+.institutional-page .login-visual .brand-mark{
+  width:50px;height:60px;border:0;border-radius:0;background:transparent;box-shadow:none
+}
+.institutional-page .login-visual h1{
+  max-width:760px;text-transform:uppercase;font-size:clamp(3.6rem,6vw,7rem);line-height:.87
+}
+.institutional-page .login-side{
+  position:relative;background:
+    radial-gradient(circle at 50% 18%,rgba(200,165,68,.08),transparent 18rem),
+    #0d0e0b
+}
+.institutional-page .login-side::before{
+  content:"";position:absolute;inset:0;opacity:.1;
+  background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:52px 52px
+}
+.institutional-page .login-card{
+  position:relative;z-index:2;border-radius:0;border-color:var(--inst-line);
+  background:rgba(16,17,13,.88);padding:38px
+}
+.institutional-page .login-card h2{text-transform:uppercase;letter-spacing:-.04em;font-size:2.4rem}
+
+/* Panel */
+.admin-body.institutional-page{
+  background:#090a08;
+}
+.admin-body.institutional-page .sidebar{
+  background:
+    linear-gradient(180deg,rgba(200,165,68,.06),transparent 28%),
+    #0d0e0b;
+  border-color:var(--inst-line)
+}
+.admin-body.institutional-page .sidebar .brand-mark{
+  width:48px;height:58px;border:0;border-radius:0;background:transparent;box-shadow:none
+}
+.admin-body.institutional-page .sidebar .brand-logo-image{background:transparent;padding:0;object-fit:contain}
+.admin-body.institutional-page .sidebar .brand-copy strong{
+  text-transform:uppercase;letter-spacing:.08em;color:#ece7d9;font-size:.8rem
+}
+.admin-body.institutional-page .sidebar .brand-copy small{
+  text-transform:uppercase;letter-spacing:.12em;font-size:.55rem
+}
+.admin-body.institutional-page .sidebar-nav{margin-top:38px}
+.admin-body.institutional-page .sidebar-link{
+  border-radius:0;border-left:2px solid transparent;text-transform:uppercase;
+  letter-spacing:.06em;font-size:.68rem;padding:14px 13px
+}
+.admin-body.institutional-page .sidebar-link:hover{transform:translateX(3px)}
+.admin-body.institutional-page .sidebar-link.active{
+  border-left-color:var(--inst-gold);
+  background:linear-gradient(90deg,rgba(200,165,68,.12),transparent);
+  box-shadow:none;color:var(--inst-gold-light)
+}
+.admin-body.institutional-page .admin-main{background:transparent}
+.admin-body.institutional-page .admin-topbar{
+  border-color:var(--inst-line);padding-bottom:24px
+}
+.admin-body.institutional-page .admin-topbar h1{
+  text-transform:uppercase;font-size:clamp(2rem,4vw,4.2rem);line-height:.92
+}
+.admin-body.institutional-page .avatar{border-radius:0;background:var(--inst-gold);color:#111}
+.admin-body.institutional-page .stat-card,
+.admin-body.institutional-page .panel-card,
+.admin-body.institutional-page .table-card,
+.admin-body.institutional-page .setting-card,
+.admin-body.institutional-page .question-editor-row{
+  border-radius:0;border-color:rgba(200,165,68,.15);
+  background:linear-gradient(145deg,rgba(200,165,68,.025),transparent),#10110d
+}
+.admin-body.institutional-page .stat-card{min-height:145px}
+.admin-body.institutional-page .stat-card strong{font-size:2.8rem;color:var(--inst-gold-light)}
+.admin-body.institutional-page .panel-card h2,
+.admin-body.institutional-page .question-editor-header h2{
+  text-transform:uppercase;letter-spacing:-.035em
+}
+.admin-body.institutional-page .bar span{background:linear-gradient(90deg,var(--inst-gold),var(--inst-gold-light))}
+.admin-body.institutional-page .table-card table tbody tr:hover{background:rgba(200,165,68,.04)}
+.admin-body.institutional-page th{
+  color:#8f897a;letter-spacing:.12em;background:rgba(200,165,68,.025)
+}
+.admin-body.institutional-page .role-badge,
+.admin-body.institutional-page .status-pill{border-radius:0}
+.admin-body.institutional-page .admin-menu-toggle{border-radius:0}
+.admin-body.institutional-page .modal{border-radius:0;background:#10110d;border-color:var(--inst-line)}
+.admin-body.institutional-page .permission-item{border-radius:0;background:#0d0e0b}
+.admin-body.institutional-page .search-field input{border-radius:0;background:#0d0e0b}
+.admin-body.institutional-page .question-editor-row:hover{border-color:rgba(200,165,68,.32)}
+.admin-body.institutional-page .button{border-radius:0;text-transform:uppercase;letter-spacing:.06em;font-size:.68rem}
+.admin-body.institutional-page .button.primary{background:var(--inst-gold);color:#111}
+.admin-body.institutional-page .editor-grid input,
+.admin-body.institutional-page .editor-grid textarea,
+.admin-body.institutional-page .editor-grid select{border-radius:0}
+
+/* Candidate admin */
+.admin-body.institutional-page .candidate-page-grid{margin-top:28px}
+.admin-body.institutional-page .profile-list div,
+.admin-body.institutional-page .answer-block{
+  border-radius:0;background:#0c0d0a;border-color:rgba(200,165,68,.13)
+}
+
+@media(max-width:1000px){
+  .institutional-header{width:100%;padding-inline:18px}
+  .institutional-page-banner{min-height:285px}
+  .institutional-banner-copy{width:min(100% - 32px,1240px);padding-top:100px}
+  .institutional-page .lookup-layout{grid-template-columns:1fr;background:transparent;gap:14px}
+}
+@media(max-width:720px){
+  .institutional-banner-copy{grid-template-columns:1fr;gap:8px;padding-bottom:35px}
+  .institutional-page-banner>img{right:-55px;opacity:.09}
+  .institutional-banner-copy h1{font-size:clamp(2.4rem,12vw,4rem)}
+  .institutional-page .form-header,.institutional-page .form-content{padding:24px 18px}
+  .institutional-page .form-header{flex-direction:column}
+  .institutional-page .lookup-card,.institutional-page .lookup-result{padding:25px 19px}
+  .institutional-inner-footer{width:calc(100% - 28px);align-items:flex-start;flex-direction:column}
+  .institutional-page .login-screen{grid-template-columns:1fr}
+  .institutional-page .login-visual{min-height:430px;padding:30px 22px}
+  .institutional-page .login-visual h1{font-size:clamp(3rem,15vw,5rem)}
+  .institutional-page .login-card{padding:28px 20px}
+  .admin-body.institutional-page .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-body.institutional-page .stat-card{min-height:130px}
+}
+@media(max-width:430px){
+  .institutional-page .login-visual{min-height:390px}
+  .admin-body.institutional-page .stat-card strong{font-size:2.15rem}
+}
+
+.institutional-reveal-item{
+  opacity:0;transform:translateY(14px);
+  transition:opacity .48s ease var(--institutional-delay,0ms),transform .48s ease var(--institutional-delay,0ms)
+}
+.institutional-reveal-item.institutional-visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .institutional-reveal-item{opacity:1;transform:none;transition:none}
+}
+
+
+/* ============================================================
+   Correção estrutural — página de inscrição
+   ============================================================ */
+.institutional-page .recruitment-banner{
+  min-height:300px;
+}
+.institutional-page .recruitment-banner .institutional-banner-copy{
+  padding-top:104px;
+  padding-bottom:38px;
+}
+.institutional-page .recruitment-banner .institutional-banner-copy h1{
+  max-width:760px;
+  font-size:clamp(3rem,5.4vw,5.4rem);
+}
+.institutional-page .recruitment-banner>img{
+  right:5%;
+  bottom:-68px;
+  max-height:340px;
+  opacity:.24;
+}
+
+.institutional-page .form-page{
+  width:min(1120px,calc(100% - 40px));
+  padding:54px 0 40px;
+}
+.institutional-page .form-shell{
+  width:100%;
+  overflow:visible;
+}
+.institutional-page .recruitment-form-header{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  gap:34px;
+  padding:30px 34px 28px;
+}
+.institutional-page .recruitment-form-header .form-header-copy{
+  min-width:0;
+}
+.institutional-page .recruitment-form-header h1{
+  max-width:none;
+  margin:10px 0 10px;
+  font-size:clamp(2rem,3.6vw,3.45rem);
+  line-height:.98;
+  letter-spacing:-.045em;
+  white-space:normal;
+}
+.institutional-page .recruitment-form-header p{
+  max-width:720px;
+  margin:0;
+  line-height:1.65;
+  color:var(--inst-muted);
+}
+.institutional-page .form-step-indicator{
+  min-width:108px;
+  padding:13px 14px;
+  border:1px solid var(--inst-line);
+  background:#0c0d0a;
+  display:grid;
+  gap:7px;
+  text-align:center;
+}
+.institutional-page .form-step-indicator small{
+  color:#7f796b;
+  font-size:.56rem;
+  letter-spacing:.13em;
+}
+.institutional-page .form-step-indicator .step-count{
+  padding:0;
+  border:0;
+  font-size:.9rem;
+  color:var(--inst-gold-light);
+  letter-spacing:.08em;
+}
+.institutional-page .form-content{
+  padding:32px 34px 34px;
+}
+.institutional-page .form-step{
+  min-height:auto;
+}
+.institutional-page .step-heading{
+  margin-bottom:26px;
+}
+.institutional-page .step-heading h2{
+  margin:7px 0 5px;
+  font-size:clamp(1.6rem,3vw,2.2rem);
+}
+.institutional-page .field-grid{
+  gap:16px;
+}
+.institutional-page .field input,
+.institutional-page .field select{
+  height:50px;
+}
+.institutional-page .field textarea{
+  min-height:118px;
+}
+.institutional-page .form-actions{
+  position:sticky;
+  bottom:0;
+  z-index:5;
+  margin:30px -34px -34px;
+  padding:18px 34px;
+  background:rgba(13,14,11,.96);
+  backdrop-filter:blur(14px);
+  border-top:1px solid var(--inst-line);
+}
+.institutional-page .form-actions .button{
+  min-width:150px;
+}
+.institutional-page .page-footer{
+  margin-top:60px;
+}
+
+@media(max-width:760px){
+  .institutional-page .recruitment-banner{
+    min-height:270px;
+  }
+  .institutional-page .recruitment-banner .institutional-banner-copy{
+    padding-top:94px;
+  }
+  .institutional-page .recruitment-banner>img{
+    max-height:260px;
+    right:-35px;
+    opacity:.12;
+  }
+  .institutional-page .form-page{
+    width:min(100% - 22px,1120px);
+    padding-top:28px;
+  }
+  .institutional-page .recruitment-form-header{
+    grid-template-columns:1fr;
+    gap:18px;
+    padding:23px 18px 21px;
+  }
+  .institutional-page .form-step-indicator{
+    min-width:0;
+    width:100%;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    text-align:left;
+  }
+  .institutional-page .form-content{
+    padding:24px 18px;
+  }
+  .institutional-page .form-actions{
+    margin:26px -18px -24px;
+    padding:15px 18px;
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  .institutional-page .form-actions .button{
+    width:100%;
+  }
+}
+
+
+/* ============================================================
+   Correção estrutural — página de status
+   ============================================================ */
+.institutional-page .status-banner{
+  min-height:300px;
+}
+.institutional-page .status-banner .institutional-banner-copy{
+  padding-top:104px;
+  padding-bottom:38px;
+}
+.institutional-page .status-banner .institutional-banner-copy h1{
+  max-width:780px;
+  font-size:clamp(3rem,5.4vw,5.5rem);
+}
+.institutional-page .status-banner>img{
+  max-height:285px;
+  right:7%;
+  bottom:-45px;
+  opacity:.085;
+}
+
+.institutional-page .status-page-layout{
+  width:min(980px,calc(100% - 40px));
+  margin-inline:auto;
+  padding:54px 0 40px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:22px;
+  background:transparent;
+}
+
+.institutional-page .status-query-panel{
+  width:100%;
+  padding:34px;
+  border:1px solid var(--inst-line);
+  background:
+    linear-gradient(145deg,rgba(200,165,68,.045),transparent),
+    #10110d;
+}
+
+.institutional-page .status-query-heading{
+  padding-left:18px;
+  border-left:2px solid var(--inst-gold);
+  margin-bottom:28px;
+}
+
+.institutional-page .status-query-heading h2{
+  margin:8px 0 10px;
+  font-size:clamp(2.2rem,4vw,4rem);
+  line-height:.95;
+  letter-spacing:-.055em;
+  text-transform:uppercase;
+}
+
+.institutional-page .status-query-heading p{
+  margin:0;
+  max-width:620px;
+  color:var(--inst-muted);
+  line-height:1.7;
+}
+
+.institutional-page .status-query-form{
+  display:grid;
+  grid-template-columns:1fr 1fr auto;
+  gap:16px;
+  align-items:end;
+}
+
+.institutional-page .status-query-form .field{
+  min-width:0;
+}
+
+.institutional-page .status-query-form .field input{
+  height:52px;
+}
+
+.institutional-page .status-submit-button{
+  min-height:52px;
+  padding-inline:26px;
+  white-space:nowrap;
+}
+
+.institutional-page .status-result-panel{
+  width:100%;
+  padding:34px;
+  border:1px solid var(--inst-line);
+  background:
+    linear-gradient(145deg,rgba(200,165,68,.03),transparent),
+    #0f100c;
+  animation:statusPanelIn .4s ease;
+}
+
+@keyframes statusPanelIn{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:none}
+}
+
+.institutional-page .status-result-panel .result-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:24px;
+}
+
+.institutional-page .status-result-panel .result-top h2{
+  margin:8px 0 0;
+  font-size:clamp(1.9rem,3.4vw,3.2rem);
+  line-height:1;
+}
+
+.institutional-page .status-result-panel .result-data{
+  margin:26px 0;
+}
+
+.institutional-page .status-result-panel .button.secondary{
+  margin-top:20px;
+}
+
+@media(max-width:860px){
+  .institutional-page .status-query-form{
+    grid-template-columns:1fr;
+  }
+
+  .institutional-page .status-submit-button{
+    width:100%;
+  }
+}
+
+@media(max-width:720px){
+  .institutional-page .status-banner{
+    min-height:270px;
+  }
+
+  .institutional-page .status-banner .institutional-banner-copy{
+    padding-top:94px;
+  }
+
+  .institutional-page .status-page-layout{
+    width:min(100% - 22px,980px);
+    padding-top:28px;
+  }
+
+  .institutional-page .status-query-panel,
+  .institutional-page .status-result-panel{
+    padding:24px 18px;
+  }
+
+  .institutional-page .status-result-panel .result-top{
+    flex-direction:column;
+  }
+}
+
+
+/* ============================================================
+   Correção definitiva da navbar — inscrição e status
+   ============================================================ */
+.institutional-page .institutional-header{
+  position:relative;
+  inset:auto;
+  width:min(1400px,calc(100% - 48px));
+  max-width:1400px;
+  height:88px;
+  margin:0 auto;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:28px;
+  background:#090a08;
+  border-bottom:1px solid rgba(200,165,68,.18);
+  box-sizing:border-box;
+  overflow:visible;
+}
+
+.institutional-page .institutional-header::after{
+  display:none;
+}
+
+.institutional-page .institutional-header .institutional-brand{
+  flex:0 0 auto;
+  min-width:max-content;
+}
+
+.institutional-page .institutional-header .institutional-nav{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:32px;
+  min-width:0;
+}
+
+.institutional-page .institutional-header .institutional-nav a{
+  white-space:nowrap;
+}
+
+.institutional-page .institutional-header .mobile-menu{
+  flex:0 0 44px;
+}
+
+.institutional-page .institutional-mobile-nav{
+  width:min(1400px,calc(100% - 48px));
+  max-width:1400px;
+  margin:0 auto;
+}
+
+@media(max-width:1050px){
+  .institutional-page .institutional-header{
+    width:100%;
+    max-width:none;
+    height:78px;
+    margin:0;
+    padding:0 18px;
+    position:relative;
+  }
+
+  .institutional-page .institutional-header .institutional-nav{
+    display:none;
+  }
+
+  .institutional-page .institutional-header .mobile-menu{
+    display:flex;
+    margin-left:auto;
+  }
+
+  .institutional-page .institutional-mobile-nav{
+    top:78px;
+    left:12px;
+    right:12px;
+    width:auto;
+    max-width:none;
+    margin:0;
+  }
+}
+
+@media(max-width:700px){
+  .institutional-page .institutional-header{
+    height:72px;
+    padding:0 14px;
+  }
+
+  .institutional-page .institutional-mobile-nav{
+    top:72px;
+  }
+
+  .institutional-page .institutional-brand-emblem{
+    width:38px;
+    height:46px;
+  }
+
+  .institutional-page .institutional-brand .brand-copy strong{
+    font-size:.78rem;
+  }
+
+  .institutional-page .institutional-brand .brand-copy small{
+    font-size:.5rem;
+  }
+}
