@@ -30,7 +30,6 @@
   <nav class="sidebar-nav">
     <button class="sidebar-link active" data-section-link="visao"><span class="icon">◫</span>Visão geral</button>
     <button class="sidebar-link" data-section-link="candidatos"><span class="icon">◎</span>Candidatos</button>
-    <button class="sidebar-link" data-section-link="teste-fisico" data-permission="interviews_manage"><span class="icon">◉</span>Teste físico</button>
     <button class="sidebar-link" data-section-link="questoes" data-permission="questions_view"><span class="icon">▤</span>Questionário</button>
     <button class="sidebar-link" data-section-link="equipe" data-permission="staff_manage"><span class="icon">♟</span>Equipe e permissões</button>
     <button class="sidebar-link" data-section-link="avisos" data-permission="announcements_manage"><span class="icon">✦</span>Central de avisos</button>
@@ -76,7 +75,7 @@
   </section>
 
   <section id="candidatos" class="admin-section">
-    <div class="toolbar"><div><h2>Candidatos</h2><p class="muted">Analise pontuações, respostas e decisões.</p></div><div class="toolbar-group"><input data-search placeholder="Buscar nome, passaporte ou Discord"><select data-filter><option value="all">Todos os status</option><option>Em análise</option><option>Aprovado no teste teórico</option><option>Reprovado automaticamente</option><option>Reprovado no teste teórico</option></select></div></div>
+    <div class="toolbar"><div><h2>Candidatos</h2><p class="muted">Analise pontuações, respostas e decisões.</p></div><div class="toolbar-group"><input data-search placeholder="Buscar nome, passaporte ou Discord"><select data-filter><option value="all">Todos os status</option><option>Em análise</option><option>Reprovado automaticamente</option><option>Aprovado no teste teórico</option><option>Reprovado no teste teórico</option><option>Aguardando teste físico</option><option>Aprovado no teste físico</option><option>Reprovado no teste físico</option></select></div></div>
     <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Passaporte</th><th>Nota</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody data-table></tbody></table></div><div class="empty-state hidden" data-empty>Nenhuma inscrição encontrada.</div></div>
   </section>
 
@@ -91,12 +90,6 @@
 
 
 
-  <section id="teste-fisico" class="admin-section">
-    <div class="question-editor-header">
-      <div><span class="eyebrow">ETAPA COLETIVA</span><h2>Teste físico</h2><p class="muted">Candidatos aprovados no teste teórico e aguardando convocação coletiva pelo Discord.</p></div>
-    </div>
-    <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Protocolo</th><th>Discord</th><th>Status</th><th>Responsável</th><th></th></tr></thead><tbody data-physical-table></tbody></table></div><div class="empty-state hidden" data-physical-empty>Nenhum candidato aguardando teste físico.</div></div>
-  </section>
 
   <section id="avisos" class="admin-section">
     <div class="question-editor-header">

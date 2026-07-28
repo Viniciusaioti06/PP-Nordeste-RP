@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   try{profile=await Auth.requireStaff()}catch(err){alert(err.message);location.href="login.html";return}
 
   const permissionFor={
-    visao:"dashboard_view",candidatos:"candidates_view","teste-fisico":"interviews_manage",
+    visao:"dashboard_view",candidatos:"candidates_view",
     questoes:"questions_view",avisos:"announcements_manage",equipe:"staff_manage",
     auditoria:"audit_view",configuracoes:"settings_manage"
   };
@@ -49,7 +49,6 @@ document.addEventListener("DOMContentLoaded",async()=>{
     links.forEach(link=>link.classList.toggle("active",link.dataset.sectionLink===id));
     sections.forEach(section=>section.classList.toggle("active",section.id===id));
     if(id==="candidatos")await renderApplications();
-    if(id==="teste-fisico")await renderPhysical();
     if(id==="questoes")await renderQuestions();
     if(id==="avisos")await renderAnnouncements();
     if(id==="equipe")await renderStaff();
@@ -89,18 +88,13 @@ document.addEventListener("DOMContentLoaded",async()=>{
     );
     document.querySelector("[data-table]").innerHTML=list.map(app=>`<tr>
       <td><div class="name-cell"><strong>${escapeHTML(app.character_name)}</strong><small>${escapeHTML(app.discord)}</small></div></td>
-      <td>${escapeHTML(app.passport)}</td><td>${app.automatic_score}/${app.maximum_automatic_score}</td>
+      <td>${escapeHTML(app.passport)}</td><td><strong>${app.maximum_automatic_score?Math.round(app.automatic_score/app.maximum_automatic_score*100):0}%</strong><small class="score-detail">${app.automatic_score}/${app.maximum_automatic_score}</small></td>
       <td><span class="status-pill ${app.status.includes("Aprovado")?"approved":app.status.includes("Reprovado")?"rejected":""}">${escapeHTML(app.status)}</span></td>
-      <td>${formatDate(app.created_at)}</td><td><a class="button secondary small" href="candidato.html?id=${app.id}">Abrir</a></td></tr>`).join("");
+      <td>${formatDate(app.created_at)}</td><td><a class="button secondary small" href="candidato.html?id=${app.id}">Analisar</a></td></tr>`).join("");
     document.querySelector("[data-empty]").classList.toggle("hidden",list.length>0);
   };
 
-  const renderPhysical=async()=>{
-    applications=await ApplicationsService.list();
-    const list=applications.filter(a=>["Aprovado no teste teórico","Aguardando teste físico","Aprovado no teste físico","Reprovado no teste físico"].includes(a.status));
-    document.querySelector("[data-physical-table]").innerHTML=list.map(app=>`<tr><td>${escapeHTML(app.character_name)}</td><td>${escapeHTML(app.protocol)}</td><td>${escapeHTML(app.discord)}</td><td>${escapeHTML(app.status)}</td><td>${escapeHTML(app.physical_recruiter||"—")}</td><td><a class="button secondary small" href="candidato.html?id=${app.id}">Abrir</a></td></tr>`).join("");
-    document.querySelector("[data-physical-empty]").classList.toggle("hidden",list.length>0);
-  };
+
 
   let questions=[];
   const renderQuestions=async()=>{

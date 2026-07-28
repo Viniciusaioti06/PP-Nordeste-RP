@@ -1,36 +1,157 @@
-<!doctype html><html lang="pt-BR"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Análise de Candidato | Polícia Penal</title>
-<link rel="stylesheet" href="../css/variables.css">
-<link rel="stylesheet" href="../css/global.css">
-<link rel="stylesheet" href="../css/components.css">
-<link rel="stylesheet" href="../css/animations.css">
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dossiê do Candidato | Polícia Penal</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/visual-v3.css">
+  <link rel="stylesheet" href="../css/institutional-pages.css">
+  <script defer src="../js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../supabase/config.js"></script>
+  <script src="../js/core/utils.js"></script>
+  <script src="../js/core/supabase-health.js"></script>
+  <script src="../js/core/auth.js"></script>
+  <script src="../js/services/applications.js"></script>
+  <script src="../js/services/questions.js"></script>
+  <script src="../js/services/staff.js"></script>
+  <script src="../js/services/settings.js"></script>
+  <script src="../js/services/announcements.js"></script>
+  <script src="../js/services/audit.js"></script>
+  <script defer src="../js/pages/candidate-admin.js"></script>
+</head>
+<body class="admin-body institutional-page candidate-dossier-body">
+<main class="candidate-dossier" data-page>
+  <header class="dossier-toolbar">
+    <button class="button secondary small" type="button" data-back>← Voltar aos candidatos</button>
+    <div class="dossier-toolbar-actions">
+      <span class="save-indicator" data-save-indicator>Alterações salvas</span>
+      <button class="button secondary small" type="button" data-save-review>Salvar análise</button>
+    </div>
+  </header>
 
-<link rel="stylesheet" href="../css/dashboard.css">
-<script defer src="../js/app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../supabase/config.js"></script>
-<script src="../js/core/utils.js"></script>
-<script src="../js/core/supabase-health.js"></script>
-<script src="../js/core/auth.js"></script>
-<script src="../js/services/applications.js"></script>
-<script src="../js/services/questions.js"></script>
-<script src="../js/services/staff.js"></script>
-<script src="../js/services/settings.js"></script>
-<script src="../js/services/announcements.js"></script>
-<script src="../js/services/audit.js"></script>
-<script defer src="../js/pages/candidate-admin.js"></script>
-<link rel="stylesheet" href="../css/visual-v3.css">
-<link rel="stylesheet" href="../css/institutional-pages.css">
-</head><body class="admin-body institutional-page">
-<main class="admin-main" style="margin-left:0" data-page>
-  <header class="admin-topbar"><div><button class="button secondary small" data-back>← Voltar</button><span class="eyebrow" style="display:block;margin-top:18px">ANÁLISE COMPLETA</span><h1 data-name></h1></div><span class="status-pill" data-status></span></header>
-  <section class="candidate-page-grid">
-    <article class="profile-card panel-card"><h2>Perfil do candidato</h2><div class="profile-list"><div><span>Protocolo</span><strong data-protocol></strong></div><div><span>Passaporte</span><strong data-passport></strong></div><div><span>Discord</span><strong data-discord></strong></div><div><span>Disponibilidade</span><strong data-availability></strong></div><div><span>Experiência</span><strong data-experience></strong></div><div><span>Pontuação automática</span><strong data-score></strong></div><div><span>Data de envio</span><strong data-created></strong></div></div></article>
-    <article class="answers-card panel-card"><h2>Respostas abertas</h2><div data-answers></div><div class="review-actions"><textarea data-notes placeholder="Observações internas do recrutador"></textarea><button class="button primary" data-approve>Aprovar no teste teórico</button><button class="button danger" data-reject>Reprovar no teste teórico</button>
-<button class="button primary hidden" data-physical-approve>Aprovar no teste físico</button>
-<button class="button danger hidden" data-physical-reject>Reprovar no teste físico</button></div></article>
+  <section class="dossier-hero panel-card">
+    <div class="dossier-seal"><img src="../assets/images/brasao-policia-penal.png" alt="Brasão da Polícia Penal"></div>
+    <div class="dossier-identity">
+      <span class="eyebrow">DOSSIÊ DE RECRUTAMENTO • USO INTERNO</span>
+      <h1 data-name>Carregando candidato...</h1>
+      <div class="identity-meta">
+        <span>Protocolo <strong data-protocol>—</strong></span>
+        <span>Passaporte <strong data-passport>—</strong></span>
+        <span>Discord <strong data-discord>—</strong></span>
+      </div>
+    </div>
+    <div class="dossier-state">
+      <span class="status-pill" data-status>—</span>
+      <small>Última atualização</small>
+      <strong data-updated>—</strong>
+    </div>
   </section>
-</main><script defer src="../js/visual-v3.js"></script>
-<script defer src="../js/institutional-pages.js"></script>
-</body></html>
+
+  <section class="dossier-kpis">
+    <article class="dossier-kpi panel-card">
+      <span>Nota automática</span>
+      <div class="score-ring" data-score-ring><strong data-score-percent>0%</strong></div>
+      <small data-score>0/0 pontos</small>
+    </article>
+    <article class="dossier-kpi panel-card">
+      <span>Nível de atenção</span>
+      <strong class="risk-value" data-risk>—</strong>
+      <small data-risk-detail>Calculando indicadores</small>
+    </article>
+    <article class="dossier-kpi panel-card">
+      <span>Tempo no processo</span>
+      <strong data-process-time>—</strong>
+      <small>desde o envio da inscrição</small>
+    </article>
+    <article class="dossier-kpi panel-card">
+      <span>Checklist</span>
+      <strong data-checklist-score>0/7</strong>
+      <div class="mini-progress"><span data-checklist-progress></span></div>
+      <small>critérios confirmados</small>
+    </article>
+  </section>
+
+  <div class="dossier-layout">
+    <div class="dossier-main-column">
+      <section class="panel-card dossier-section">
+        <header class="section-heading">
+          <div><span class="eyebrow">IDENTIFICAÇÃO</span><h2>Perfil do candidato</h2></div>
+          <span class="section-index">01</span>
+        </header>
+        <div class="profile-details-grid">
+          <div><span>Idade do personagem</span><strong data-character-age>Não informado</strong></div>
+          <div><span>Tempo de cidade</span><strong data-city-time>Não informado</strong></div>
+          <div><span>Disponibilidade</span><strong data-availability>Não informado</strong></div>
+          <div><span>Experiência anterior</span><strong data-experience>Não informado</strong></div>
+          <div><span>Data de envio</span><strong data-created>—</strong></div>
+          <div><span>Triagem eliminatória</span><strong data-eliminatory>—</strong></div>
+        </div>
+      </section>
+
+      <section class="panel-card dossier-section">
+        <header class="section-heading">
+          <div><span class="eyebrow">AVALIAÇÃO DO RECRUTADOR</span><h2>Checklist institucional</h2><p>Marque os critérios comprovados durante a análise.</p></div>
+          <span class="section-index">02</span>
+        </header>
+        <div class="evaluation-checklist" data-checklist></div>
+        <label class="review-note-field">
+          <span>Parecer geral do recrutador</span>
+          <textarea data-notes placeholder="Registre aqui observações internas, pontos de atenção e justificativas da decisão."></textarea>
+        </label>
+      </section>
+
+      <section class="panel-card dossier-section">
+        <header class="section-heading answers-heading">
+          <div><span class="eyebrow">PROVA TEÓRICA</span><h2>Respostas do candidato</h2><p>Avalie individualmente as respostas abertas e consulte a correção automática.</p></div>
+          <span class="section-index">03</span>
+        </header>
+        <div class="answer-filters" data-answer-filters>
+          <button class="active" type="button" data-answer-filter="all">Todas</button>
+          <button type="button" data-answer-filter="open">Abertas</button>
+          <button type="button" data-answer-filter="objective">Objetivas</button>
+          <button type="button" data-answer-filter="eliminatory">Eliminatórias</button>
+        </div>
+        <div class="premium-answers" data-answers></div>
+      </section>
+
+      <section class="panel-card dossier-section">
+        <header class="section-heading">
+          <div><span class="eyebrow">HISTÓRICO</span><h2>Linha do tempo do processo</h2></div>
+          <span class="section-index">04</span>
+        </header>
+        <div class="candidate-timeline" data-timeline></div>
+      </section>
+    </div>
+
+    <aside class="decision-sidebar">
+      <section class="panel-card decision-card">
+        <span class="eyebrow">DECISÃO DO RECRUTADOR</span>
+        <h2>Encaminhamento</h2>
+        <p data-decision-help>Revise as informações antes de registrar uma decisão.</p>
+        <div class="decision-summary">
+          <div><span>Situação atual</span><strong data-decision-status>—</strong></div>
+          <div><span>Checklist</span><strong data-decision-checklist>0/7</strong></div>
+          <div><span>Respostas avaliadas</span><strong data-reviewed-answers>0/0</strong></div>
+        </div>
+        <div class="decision-actions theoretical-actions">
+          <button class="button primary" type="button" data-approve>Aprovar teste teórico</button>
+          <button class="button danger" type="button" data-reject>Reprovar teste teórico</button>
+        </div>
+        <div class="decision-divider"><span>Etapa física</span></div>
+        <div class="decision-actions">
+          <button class="button primary" type="button" data-physical-approve>Aprovar teste físico</button>
+          <button class="button danger" type="button" data-physical-reject>Reprovar teste físico</button>
+        </div>
+        <small class="decision-warning">Todas as decisões ficam registradas na auditoria e na linha do tempo.</small>
+      </section>
+    </aside>
+  </div>
+</main>
+</body>
+</html>
