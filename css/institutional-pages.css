@@ -743,3 +743,227 @@
     font-size:.5rem;
   }
 }
+
+
+/* ============================================================
+   Discord OAuth + proteção antifraude
+   ============================================================ */
+.discord-auth-gate,
+.discord-connected-card,
+.duplicate-application-card{
+  width:100%;
+  margin-bottom:22px;
+  border:1px solid rgba(88,101,242,.38);
+  background:
+    radial-gradient(circle at 92% 20%,rgba(88,101,242,.15),transparent 18rem),
+    linear-gradient(145deg,rgba(88,101,242,.06),rgba(200,165,68,.025)),
+    #10110d;
+  box-shadow:0 24px 70px rgba(0,0,0,.24);
+}
+
+.discord-auth-gate{
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr) minmax(230px,.42fr);
+  gap:24px;
+  align-items:center;
+  padding:30px;
+}
+
+.discord-auth-icon,
+.discord-connected-avatar{
+  width:62px;
+  height:62px;
+  border-radius:17px;
+  display:grid;
+  place-items:center;
+  object-fit:cover;
+  background:linear-gradient(145deg,#7289da,#5865f2);
+  color:#fff;
+  font-size:1.8rem;
+  box-shadow:0 16px 38px rgba(88,101,242,.28);
+}
+
+.discord-auth-copy h2,
+.duplicate-application-card h2{
+  margin:8px 0 10px;
+  font-size:clamp(1.8rem,3vw,2.8rem);
+  line-height:1;
+  letter-spacing:-.04em;
+  text-transform:uppercase;
+}
+
+.discord-auth-copy>p,
+.duplicate-application-card>p{
+  margin:0;
+  max-width:700px;
+  color:var(--inst-muted);
+  line-height:1.65;
+}
+
+.discord-auth-security{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:18px;
+}
+
+.discord-auth-security span{
+  padding:7px 10px;
+  border:1px solid rgba(88,101,242,.25);
+  background:rgba(88,101,242,.06);
+  color:#c9cce8;
+  font-size:.7rem;
+}
+
+.discord-auth-actions{
+  display:grid;
+  gap:10px;
+}
+
+.discord-connect-button{
+  min-height:52px;
+  padding:0 18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(135deg,#7289da,#5865f2);
+  color:#fff;
+  font:inherit;
+  font-weight:850;
+  cursor:pointer;
+  transition:transform .22s ease,box-shadow .22s ease,opacity .22s ease;
+}
+
+.discord-connect-button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 16px 34px rgba(88,101,242,.28);
+}
+
+.discord-connect-button:disabled{opacity:.65;cursor:wait;transform:none}
+
+.discord-auth-actions small{
+  color:#8f91a8;
+  font-size:.7rem;
+  line-height:1.5;
+  text-align:center;
+}
+
+.discord-auth-spinner{
+  width:17px;
+  height:17px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.32);
+  border-top-color:#fff;
+  animation:discordAuthSpin .8s linear infinite;
+}
+
+@keyframes discordAuthSpin{to{transform:rotate(360deg)}}
+
+.discord-connected-card{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr) auto;
+  gap:18px;
+  align-items:center;
+  padding:18px 22px;
+  border-color:rgba(63,199,125,.28);
+  background:
+    linear-gradient(90deg,rgba(63,199,125,.07),transparent),
+    #10110d;
+}
+
+.discord-connected-card>div:nth-child(3){
+  display:grid;
+  gap:4px;
+}
+
+.discord-connected-card strong{
+  font-size:1.04rem;
+}
+
+.discord-connected-card small{
+  color:var(--inst-muted);
+  font-size:.72rem;
+}
+
+.discord-connected-card .discord-connected-avatar{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  font-size:1.35rem;
+}
+
+.duplicate-application-card{
+  padding:30px;
+  text-align:center;
+  border-color:rgba(200,165,68,.3);
+}
+
+.duplicate-application-card .existing-protocol{
+  width:min(440px,100%);
+  margin:22px auto;
+  padding:18px;
+  display:grid;
+  gap:7px;
+  border:1px dashed rgba(200,165,68,.4);
+  background:rgba(200,165,68,.06);
+}
+
+.duplicate-application-card .existing-protocol small{
+  color:var(--inst-muted);
+  font-size:.62rem;
+  letter-spacing:.14em;
+}
+
+.duplicate-application-card .existing-protocol strong{
+  color:var(--inst-gold-light);
+  font-size:1.45rem;
+  letter-spacing:.07em;
+}
+
+.field-help{
+  color:#777f78;
+  font-size:.68rem;
+  line-height:1.4;
+}
+
+@media(max-width:900px){
+  .discord-auth-gate{
+    grid-template-columns:62px 1fr;
+  }
+
+  .discord-auth-actions{
+    grid-column:1/-1;
+  }
+}
+
+@media(max-width:620px){
+  .discord-auth-gate{
+    grid-template-columns:1fr;
+    padding:23px 18px;
+    text-align:center;
+  }
+
+  .discord-auth-icon{
+    margin-inline:auto;
+  }
+
+  .discord-auth-security{
+    justify-content:center;
+  }
+
+  .discord-connected-card{
+    grid-template-columns:52px 1fr;
+    padding:16px;
+  }
+
+  .discord-connected-card .button{
+    grid-column:1/-1;
+    width:100%;
+  }
+
+  .duplicate-application-card{
+    padding:24px 18px;
+  }
+}

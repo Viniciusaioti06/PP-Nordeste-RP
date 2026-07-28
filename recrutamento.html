@@ -66,7 +66,38 @@
 
 
 <main class="container form-page">
-  <section class="form-shell card" data-form-shell>
+  <section class="discord-auth-gate" data-discord-gate>
+    <div class="discord-auth-icon"><i class="bi bi-discord"></i></div>
+    <div class="discord-auth-copy">
+      <span class="eyebrow">IDENTIFICAÇÃO OBRIGATÓRIA</span>
+      <h2>Conecte seu Discord para iniciar</h2>
+      <p>Utilizamos a conta conectada para vincular uma única inscrição a cada candidato e reduzir tentativas de fraude.</p>
+      <div class="discord-auth-security">
+        <span>✓ Sua senha não é compartilhada com o site</span>
+        <span>✓ Uma inscrição por conta e passaporte</span>
+        <span>✓ Identificação feita pelo OAuth oficial</span>
+      </div>
+    </div>
+    <div class="discord-auth-actions">
+      <button class="discord-connect-button" type="button" data-connect-discord>
+        <i class="bi bi-discord"></i>
+        Conectar Discord
+      </button>
+      <small data-discord-auth-message>Você será redirecionado ao Discord para autorizar a identificação.</small>
+    </div>
+  </section>
+
+  <section class="discord-connected-card hidden" data-discord-connected>
+    <div class="discord-connected-avatar" data-discord-avatar-fallback><i class="bi bi-discord"></i></div>
+    <img class="discord-connected-avatar hidden" data-discord-avatar alt="">
+    <div>
+      <span class="eyebrow">DISCORD CONECTADO</span>
+      <strong data-discord-name></strong>
+      <small data-discord-id></small>
+    </div>
+    <button class="button secondary small" type="button" data-disconnect-discord>Trocar conta</button>
+  </section>
+  <section class="form-shell card hidden" data-form-shell>
     <header class="form-header recruitment-form-header">
       <div class="form-header-copy">
         <span class="eyebrow">FORMULÁRIO DE INSCRIÇÃO</span>
@@ -85,7 +116,12 @@
         <div class="field-grid">
           <label class="field"><span>Nome do personagem</span><input name="characterName" required minlength="3"><small class="error"></small></label>
           <label class="field"><span>Passaporte / ID</span><input name="passport" required><small class="error"></small></label>
-          <label class="field"><span>Discord</span><input name="discord" required><small class="error"></small></label>
+          <label class="field">
+      <span>Discord conectado</span>
+      <input name="discord" readonly required>
+      <small class="field-help">Preenchido automaticamente pela conta autenticada.</small>
+      <small class="error"></small>
+    </label>
           <label class="field"><span>Idade do personagem</span><input name="characterAge" type="number" min="18" required><small class="error"></small></label>
           <label class="field"><span>Tempo de cidade</span><input name="cityTime" placeholder="Ex.: 6 meses" required><small class="error"></small></label>
           <label class="field"><span>Disponibilidade</span><input name="availability" placeholder="Ex.: 19h às 23h" required><small class="error"></small></label>
