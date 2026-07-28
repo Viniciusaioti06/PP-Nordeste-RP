@@ -207,11 +207,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     indicator.textContent = "Salvando análise...";
     indicator.classList.add("visible", "saving");
 
-    const timelineWithoutSnapshots = (app.timeline || []).filter(event => event?.type !== "review_snapshot");
+    const existingTimeline = Array.isArray(app.timeline) ? app.timeline : [];
     const snapshot = {
       type: "review_snapshot",
       date: new Date().toISOString(),
       actor: profile.display_name,
+      actor_id: profile.id,
       data: {
         checklist: reviewState.checklist,
         questionReviews: reviewState.questionReviews,
@@ -221,7 +222,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     app = await ApplicationsService.update(app.id, {
       reviewer_notes: notes.value.trim(),
       reviewer_id: profile.id,
-      timeline: [...timelineWithoutSnapshots, snapshot],
+      timeline: [...existingTimeline, snapshot],
     });
 
     dirty = false;

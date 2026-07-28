@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
   try{profile=await Auth.requireStaff()}catch(err){alert(err.message);location.href="login.html";return}
 
   const permissionFor={
-    visao:"dashboard_view",candidatos:"candidates_view",
+    visao:"dashboard_view",candidatos:"candidates_view",analises:"leadership_only",
     questoes:"questions_view",avisos:"announcements_manage",equipe:"staff_manage",
     auditoria:"audit_view",configuracoes:"settings_manage"
   };
@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
   document.querySelector("[data-user-avatar]").textContent=profile.display_name.split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();
   document.querySelectorAll("[data-permission]").forEach(el=>{if(!profile.permissions?.[el.dataset.permission])el.hidden=true});
   document.querySelectorAll("[data-permission-action]").forEach(el=>{if(!profile.permissions?.[el.dataset.permissionAction])el.classList.add("hidden")});
+  const isLeadership=["supervisor","admin"].includes(profile.role);
+  document.querySelectorAll("[data-leadership-only]").forEach(el=>{if(!isLeadership)el.hidden=true});
 
   const sidebar=document.querySelector("[data-sidebar]");
   const sidebarToggle=document.querySelector("[data-sidebar-toggle]");
@@ -45,10 +47,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
   const sections=[...document.querySelectorAll(".admin-section")];
   const links=[...document.querySelectorAll("[data-section-link]")];
   const show=async id=>{
-    if(permissionFor[id]&&!profile.permissions?.[permissionFor[id]]){showToast("Acesso negado.");return}
+    if(id==="analises"&&!isLeadership){showToast("Área exclusiva para supervisores e administradores.");return}
+    if(permissionFor[id]&&permissionFor[id]!=="leadership_only"&&!profile.permissions?.[permissionFor[id]]){showToast("Acesso negado.");return}
     links.forEach(link=>link.classList.toggle("active",link.dataset.sectionLink===id));
     sections.forEach(section=>section.classList.toggle("active",section.id===id));
     if(id==="candidatos")await renderApplications();
+    if(id==="analises")await renderReviewSupervision();
     if(id==="questoes")await renderQuestions();
     if(id==="avisos")await renderAnnouncements();
     if(id==="equipe")await renderStaff();
@@ -93,6 +97,111 @@ document.addEventListener("DOMContentLoaded",async()=>{
       <td>${formatDate(app.created_at)}</td><td><a class="button secondary small" href="candidato.html?id=${app.id}">Analisar</a></td></tr>`).join("");
     document.querySelector("[data-empty]").classList.toggle("hidden",list.length>0);
   };
+
+
+  const REVIEW_CHECKLIST_TOTAL=7;
+  let supervisionStaff=[];
+  let supervisionRows=[];
+
+  const reviewSnapshotsFor=app=>(app.timeline||[]).filter(event=>event?.type==="review_snapshot");
+  const latestSnapshotFor=app=>reviewSnapshotsFor(app).at(-1)||null;
+  const openAnswerCount=app=>Object.values(app.answers||{}).filter(answer=>answer?.type==="open").length;
+  const snapshotCompletion=(app,snapshot)=>{
+    if(!snapshot)return 0;
+    const checklist=snapshot.data?.checklist||{};
+    const questionReviews=snapshot.data?.questionReviews||{};
+    const checklistDone=Object.values(checklist).filter(Boolean).length;
+    const openTotal=openAnswerCount(app);
+    const openDone=Object.values(questionReviews).filter(item=>item?.quality).length;
+    const checklistPercent=checklistDone/REVIEW_CHECKLIST_TOTAL*100;
+    const answerPercent=openTotal?Math.min(openDone/openTotal,1)*100:100;
+    return Math.round((checklistPercent+answerPercent)/2);
+  };
+  const reviewStateLabel=value=>value>=95?"Completa":value>0?"Parcial":"Sem análise";
+  const reviewStateClass=value=>value>=95?"complete":value>0?"partial":"none";
+
+  const buildSupervisionRows=()=>applications.map(app=>{
+    const snapshots=reviewSnapshotsFor(app);
+    const snapshot=snapshots.at(-1)||null;
+    const reviewerId=app.reviewer_id||snapshot?.actor_id||"";
+    const staff=supervisionStaff.find(member=>member.id===reviewerId);
+    const reviewerName=snapshot?.actor||staff?.display_name||"Não atribuído";
+    const completion=snapshotCompletion(app,snapshot);
+    return {app,snapshots,snapshot,reviewerId,reviewerName,completion};
+  });
+
+  const renderReviewSupervision=async()=>{
+    if(!isLeadership)return;
+    applications=await ApplicationsService.list();
+    try{supervisionStaff=await StaffService.list()}catch{supervisionStaff=[]}
+    supervisionRows=buildSupervisionRows();
+
+    const allSnapshots=supervisionRows.flatMap(row=>row.snapshots.map(snapshot=>({...snapshot,app:row.app,reviewerName:snapshot.actor||row.reviewerName})));
+    const reviewed=supervisionRows.filter(row=>row.snapshot);
+    const average=reviewed.length?Math.round(reviewed.reduce((sum,row)=>sum+row.completion,0)/reviewed.length):0;
+    document.querySelector("[data-reviews-total]").textContent=allSnapshots.length;
+    document.querySelector("[data-reviewed-candidates]").textContent=reviewed.length;
+    document.querySelector("[data-unreviewed-candidates]").textContent=supervisionRows.length-reviewed.length;
+    document.querySelector("[data-review-completion]").textContent=`${average}%`;
+
+    const grouped=new Map();
+    reviewed.forEach(row=>{
+      const key=row.reviewerId||row.reviewerName;
+      if(!grouped.has(key))grouped.set(key,{name:row.reviewerName,count:0,total:0,complete:0,last:null});
+      const item=grouped.get(key);item.count++;item.total+=row.completion;if(row.completion>=95)item.complete++;
+      const date=row.snapshot?.date||row.app.updated_at;
+      if(!item.last||new Date(date)>new Date(item.last))item.last=date;
+    });
+    const performance=[...grouped.values()].sort((a,b)=>b.count-a.count);
+    const perfContainer=document.querySelector("[data-recruiter-performance]");
+    perfContainer.innerHTML=performance.map(item=>{
+      const avg=Math.round(item.total/item.count);
+      return `<article class="recruiter-performance-item"><div class="recruiter-avatar">${escapeHTML(item.name.split(" ").map(part=>part[0]).slice(0,2).join("").toUpperCase())}</div><div class="recruiter-performance-copy"><header><strong>${escapeHTML(item.name)}</strong><span>${item.count} ${item.count===1?"análise":"análises"}</span></header><div class="review-progress"><span style="width:${avg}%"></span></div><small>${item.complete} completas • média de ${avg}% • última ${formatDate(item.last)}</small></div></article>`;
+    }).join("");
+    document.querySelector("[data-recruiter-empty]").classList.toggle("hidden",performance.length>0);
+
+    const recent=allSnapshots.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,7);
+    document.querySelector("[data-review-feed]").innerHTML=recent.map(item=>`<button type="button" class="supervision-feed-item" data-inspect-review="${item.app.id}"><span class="feed-dot"></span><span><strong>${escapeHTML(item.reviewerName)}</strong> salvou uma análise de <b>${escapeHTML(item.app.character_name||"candidato")}</b><small>${formatDate(item.date)}</small></span></button>`).join("");
+    document.querySelector("[data-review-feed-empty]").classList.toggle("hidden",recent.length>0);
+
+    const recruiterSelect=document.querySelector("[data-review-recruiter]");
+    const selected=recruiterSelect.value||"all";
+    recruiterSelect.innerHTML='<option value="all">Todos os recrutadores</option>'+performance.map(item=>`<option value="${escapeHTML(item.name)}">${escapeHTML(item.name)}</option>`).join("");
+    if([...recruiterSelect.options].some(option=>option.value===selected))recruiterSelect.value=selected;
+    renderReviewTable();
+  };
+
+  const renderReviewTable=()=>{
+    const term=(document.querySelector("[data-review-search]")?.value||"").toLowerCase();
+    const state=document.querySelector("[data-review-status]")?.value||"all";
+    const recruiter=document.querySelector("[data-review-recruiter]")?.value||"all";
+    const rows=supervisionRows.filter(row=>{
+      const stateClass=reviewStateClass(row.completion);
+      return [row.app.character_name,row.app.passport,row.reviewerName].some(value=>String(value||"").toLowerCase().includes(term))&&(state==="all"||state===stateClass)&&(recruiter==="all"||row.reviewerName===recruiter);
+    });
+    document.querySelector("[data-review-table]").innerHTML=rows.map(row=>`<tr><td><div class="name-cell"><strong>${escapeHTML(row.app.character_name||"Sem nome")}</strong><small>${escapeHTML(row.app.passport||row.app.protocol||"")}</small></div></td><td>${row.snapshot?`<div class="name-cell"><strong>${escapeHTML(row.reviewerName)}</strong><small>${row.snapshots.length} ${row.snapshots.length===1?"versão":"versões"}</small></div>`:'<span class="muted">Não atribuído</span>'}</td><td><div class="table-review-progress"><div class="review-progress"><span style="width:${row.completion}%"></span></div><small>${row.completion}% • ${reviewStateLabel(row.completion)}</small></div></td><td><span class="review-state ${reviewStateClass(row.completion)}">${reviewStateLabel(row.completion)}</span></td><td>${row.snapshot?formatDate(row.snapshot.date):"—"}</td><td><div class="row-actions"><button class="button secondary small" type="button" data-inspect-review="${row.app.id}">${row.snapshot?"Revisar":"Ver candidato"}</button><a class="button ghost small" href="candidato.html?id=${row.app.id}">Dossiê</a></div></td></tr>`).join("");
+    document.querySelector("[data-review-empty]").classList.toggle("hidden",rows.length>0);
+  };
+
+  const inspectReview=applicationId=>{
+    const row=supervisionRows.find(item=>item.app.id===applicationId);
+    if(!row)return;
+    if(!row.snapshot){location.href=`candidato.html?id=${row.app.id}`;return}
+    const data=row.snapshot.data||{};
+    const checklist=data.checklist||{};
+    const questionReviews=data.questionReviews||{};
+    const checklistDone=Object.values(checklist).filter(Boolean).length;
+    const qualities=Object.values(questionReviews).reduce((acc,item)=>{if(item?.quality)acc[item.quality]=(acc[item.quality]||0)+1;return acc},{});
+    const modal=document.querySelector("[data-review-inspection-modal]");
+    document.querySelector("[data-review-inspection-content]").innerHTML=`<span class="eyebrow">PARECER DO RECRUTADOR</span><h2>${escapeHTML(row.app.character_name||"Candidato")}</h2><p class="muted">Analisado por ${escapeHTML(row.reviewerName)} em ${formatDate(row.snapshot.date)}.</p><div class="inspection-summary"><div><span>Conclusão</span><strong>${row.completion}%</strong></div><div><span>Checklist</span><strong>${checklistDone}/${REVIEW_CHECKLIST_TOTAL}</strong></div><div><span>Respostas avaliadas</span><strong>${Object.values(questionReviews).filter(item=>item?.quality).length}/${openAnswerCount(row.app)}</strong></div><div><span>Versões salvas</span><strong>${row.snapshots.length}</strong></div></div><div class="inspection-block"><h3>Distribuição qualitativa</h3><div class="quality-summary">${["Excelente","Boa","Regular","Fraca"].map(label=>`<span><b>${qualities[label]||0}</b>${label}</span>`).join("")}</div></div><div class="inspection-block"><h3>Parecer geral</h3><p class="inspection-note">${escapeHTML(row.app.reviewer_notes||"Nenhuma observação geral registrada.")}</p></div><div class="modal-actions"><a class="button primary" href="candidato.html?id=${row.app.id}">Abrir dossiê completo</a><button class="button secondary" value="cancel">Fechar</button></div>`;
+    modal.showModal();
+  };
+
+  document.querySelector("[data-refresh-reviews]")?.addEventListener("click",renderReviewSupervision);
+  document.querySelector("[data-review-search]")?.addEventListener("input",renderReviewTable);
+  document.querySelector("[data-review-status]")?.addEventListener("change",renderReviewTable);
+  document.querySelector("[data-review-recruiter]")?.addEventListener("change",renderReviewTable);
+  document.addEventListener("click",event=>{const target=event.target.closest("[data-inspect-review]");if(target)inspectReview(target.dataset.inspectReview)});
 
 
 

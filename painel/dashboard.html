@@ -30,6 +30,7 @@
   <nav class="sidebar-nav">
     <button class="sidebar-link active" data-section-link="visao"><span class="icon">◫</span>Visão geral</button>
     <button class="sidebar-link" data-section-link="candidatos"><span class="icon">◎</span>Candidatos</button>
+    <button class="sidebar-link" data-section-link="analises" data-leadership-only><span class="icon">◉</span>Supervisão de análises</button>
     <button class="sidebar-link" data-section-link="questoes" data-permission="questions_view"><span class="icon">▤</span>Questionário</button>
     <button class="sidebar-link" data-section-link="equipe" data-permission="staff_manage"><span class="icon">♟</span>Equipe e permissões</button>
     <button class="sidebar-link" data-section-link="avisos" data-permission="announcements_manage"><span class="icon">✦</span>Central de avisos</button>
@@ -77,6 +78,46 @@
   <section id="candidatos" class="admin-section">
     <div class="toolbar"><div><h2>Candidatos</h2><p class="muted">Analise pontuações, respostas e decisões.</p></div><div class="toolbar-group"><input data-search placeholder="Buscar nome, passaporte ou Discord"><select data-filter><option value="all">Todos os status</option><option>Em análise</option><option>Reprovado automaticamente</option><option>Aprovado no teste teórico</option><option>Reprovado no teste teórico</option><option>Aguardando teste físico</option><option>Aprovado no teste físico</option><option>Reprovado no teste físico</option></select></div></div>
     <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Candidato</th><th>Passaporte</th><th>Nota</th><th>Status</th><th>Data</th><th></th></tr></thead><tbody data-table></tbody></table></div><div class="empty-state hidden" data-empty>Nenhuma inscrição encontrada.</div></div>
+  </section>
+
+
+
+  <section id="analises" class="admin-section leadership-section">
+    <div class="question-editor-header supervision-header">
+      <div><span class="eyebrow">CONTROLE DE QUALIDADE</span><h2>Supervisão de análises</h2><p class="muted">Acompanhe o trabalho dos recrutadores, revise pareceres e identifique análises pendentes ou incompletas.</p></div>
+      <button class="button secondary" type="button" data-refresh-reviews>Atualizar dados</button>
+    </div>
+
+    <div class="supervision-kpis">
+      <article class="supervision-kpi"><span>Análises registradas</span><strong data-reviews-total>0</strong><small>pareceres salvos pela equipe</small></article>
+      <article class="supervision-kpi"><span>Candidatos analisados</span><strong data-reviewed-candidates>0</strong><small>com ao menos um parecer</small></article>
+      <article class="supervision-kpi"><span>Sem análise</span><strong data-unreviewed-candidates>0</strong><small>inscrições ainda sem parecer</small></article>
+      <article class="supervision-kpi"><span>Conclusão média</span><strong data-review-completion>0%</strong><small>checklist e respostas abertas</small></article>
+    </div>
+
+    <div class="supervision-layout">
+      <article class="panel-card recruiter-performance-card">
+        <div class="section-heading compact"><div><span class="eyebrow">DESEMPENHO DA EQUIPE</span><h2>Recrutadores</h2></div></div>
+        <div class="recruiter-performance-list" data-recruiter-performance></div>
+        <div class="empty-state hidden" data-recruiter-empty>Nenhuma análise registrada pela equipe.</div>
+      </article>
+
+      <article class="panel-card supervision-feed-card">
+        <div class="section-heading compact"><div><span class="eyebrow">ÚLTIMAS ATUALIZAÇÕES</span><h2>Atividade recente</h2></div></div>
+        <div class="supervision-feed" data-review-feed></div>
+        <div class="empty-state hidden" data-review-feed-empty>Nenhuma atividade de análise encontrada.</div>
+      </article>
+    </div>
+
+    <div class="toolbar supervision-toolbar">
+      <div><h2>Registro de pareceres</h2><p class="muted">Consulte a análise mais recente ou o histórico de versões de cada candidato.</p></div>
+      <div class="toolbar-group">
+        <input type="search" placeholder="Buscar candidato ou recrutador" data-review-search>
+        <select data-review-status><option value="all">Todos</option><option value="complete">Análise completa</option><option value="partial">Análise parcial</option><option value="none">Sem análise</option></select>
+        <select data-review-recruiter><option value="all">Todos os recrutadores</option></select>
+      </div>
+    </div>
+    <div class="table-card"><div class="table-wrap"><table class="supervision-table"><thead><tr><th>Candidato</th><th>Recrutador</th><th>Progresso</th><th>Parecer</th><th>Atualização</th><th></th></tr></thead><tbody data-review-table></tbody></table></div><div class="empty-state hidden" data-review-empty>Nenhuma análise corresponde aos filtros.</div></div>
   </section>
 
   <section id="questoes" class="admin-section">
@@ -141,6 +182,14 @@
     </form>
   </section>
 </main>
+
+
+<dialog class="modal review-inspection-modal" data-review-inspection-modal>
+  <form method="dialog" class="modal-card review-inspection-card">
+    <button class="modal-close" value="cancel" aria-label="Fechar">×</button>
+    <div data-review-inspection-content></div>
+  </form>
+</dialog>
 
 <dialog class="modal" data-question-modal>
   <button class="modal-close" type="button" data-question-modal-close>×</button>
