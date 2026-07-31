@@ -170,7 +170,7 @@
 
   <section id="configuracoes" class="admin-section">
     <form id="settings-form" class="settings-grid">
-      <article class="setting-card"><h3>Recrutamento</h3><div class="switch-row"><span>Inscrições abertas</span><input type="checkbox" name="recruitmentOpen"></div><label class="field"><span>Nota mínima automática</span><input type="number" name="minimumScore" min="0" max="6"></label></article>
+      <article class="setting-card"><h3>Recrutamento</h3><div class="switch-row"><span>Inscrições abertas</span><input type="checkbox" name="recruitmentOpen"></div><label class="field"><span>Nota mínima para avançar</span><div class="score-setting-input"><input type="number" name="minimumScore" min="0" max="10" step="0.1" value="7"><strong>/ 10</strong></div><small class="field-help">Candidatos abaixo desta nota serão reprovados automaticamente na triagem.</small><small class="error" data-minimum-score-error></small></label><div class="setting-status" data-minimum-score-status>Regra atual: mínimo de 7,0 em 10 pontos.</div></article>
       <article class="setting-card"><h3>Reinscrição</h3><label class="field"><span>Prazo após reprovação (dias)</span><input type="number" name="retryDays" min="0"></label><div class="switch-row"><span>Mostrar motivo público detalhado</span><input type="checkbox" name="showPublicReason"></div></article>
       <article class="setting-card">
   <h3>Manutenção</h3>
@@ -195,24 +195,50 @@
   <button class="modal-close" type="button" data-question-modal-close>×</button>
   <span class="eyebrow" data-editor-eyebrow>NOVA QUESTÃO</span>
   <h2 data-editor-title>Configurar questão</h2>
-  <form id="question-editor-form">
+  <form id="question-editor-form" class="question-builder">
     <input type="hidden" name="id">
-    <div class="editor-grid">
-      <label class="field full"><span>Enunciado da questão</span><textarea name="title" rows="3" required></textarea><small class="error"></small></label>
-      <label class="field full"><span>Descrição ou orientação</span><textarea name="description" rows="2"></textarea><small class="error"></small></label>
-      <label class="field"><span>Categoria</span><input name="category" placeholder="Conduta, Ética, Roleplay..." required><small class="error"></small></label>
-      <label class="field"><span>Tipo</span><select name="type" required><option value="objective">Objetiva com pontuação</option><option value="eliminatory">Eliminatória</option><option value="open">Resposta aberta</option></select><small class="error"></small></label>
-      <label class="field"><span>Pontuação máxima</span><input name="points" type="number" min="0" value="0"><small class="error"></small></label>
-      <label class="field" data-min-length-field><span>Mínimo de caracteres</span><input name="minLength" type="number" min="0" value="50"><small class="error"></small></label>
-      <label class="check-row"><input type="checkbox" name="required" checked> Questão obrigatória</label><span></span>
-      <label class="check-row"><input type="checkbox" name="active" checked> Questão ativa no formulário</label><span></span>
-      <label class="field full" data-manual-criteria-field><span>Critérios para avaliação manual</span><textarea name="manualCriteria" rows="3" placeholder="O que o recrutador deve observar nesta resposta?"></textarea><small class="error"></small></label>
-      <div class="full" data-options-editor>
-        <div class="editor-help">Configure as alternativas e os pontos de cada uma. Em questões eliminatórias, marque quais alternativas eliminam o candidato.</div>
-        <div class="option-editor-list" data-option-list></div>
-        <button class="button secondary small" type="button" data-add-option>+ Adicionar alternativa</button>
-      </div>
+    <div class="question-type-guide" data-question-type-guide>
+      <strong data-type-guide-title>Questão objetiva</strong>
+      <span data-type-guide-text>O candidato escolhe uma alternativa e recebe a pontuação configurada.</span>
     </div>
+
+    <section class="editor-section">
+      <div class="editor-section-heading"><span>1</span><div><h3>Conteúdo da questão</h3><p>Escreva de forma clara o que o candidato deverá responder.</p></div></div>
+      <div class="editor-grid">
+        <label class="field full"><span>Enunciado</span><textarea name="title" rows="3" placeholder="Digite a pergunta apresentada ao candidato..." required></textarea><small class="error"></small></label>
+        <label class="field full"><span>Orientação complementar <em>(opcional)</em></span><textarea name="description" rows="2" placeholder="Adicione contexto somente quando for necessário."></textarea><small class="error"></small></label>
+        <label class="field"><span>Categoria</span><input name="category" placeholder="Ex.: Conduta, Ética ou Roleplay" required><small class="error"></small></label>
+        <label class="field"><span>Formato da resposta</span><select name="type" required><option value="objective">Objetiva — vale pontos</option><option value="eliminatory">Eliminatória — pode reprovar</option><option value="open">Aberta — análise do recrutador</option></select><small class="error"></small></label>
+      </div>
+    </section>
+
+    <section class="editor-section" data-scoring-section>
+      <div class="editor-section-heading"><span>2</span><div><h3>Pontuação</h3><p>Defina o peso desta questão na nota automática.</p></div></div>
+      <label class="field compact-field" data-points-field><span>Valor máximo da questão</span><div class="input-suffix"><input name="points" type="number" min="0" step="0.1" value="1"><b>ponto(s)</b></div><small class="field-help">A soma das questões objetivas é convertida automaticamente para uma nota de 0 a 10.</small><small class="error"></small></label>
+    </section>
+
+    <section class="editor-section" data-open-settings>
+      <div class="editor-section-heading"><span>2</span><div><h3>Como a resposta aberta será avaliada</h3><p>Questões abertas não entram na nota automática; elas recebem análise manual.</p></div></div>
+      <div class="editor-grid">
+        <label class="field" data-min-length-field><span>Mínimo de caracteres</span><input name="minLength" type="number" min="0" value="50"><small class="field-help">Ajuda a evitar respostas muito curtas.</small><small class="error"></small></label>
+        <label class="field full" data-manual-criteria-field><span>Critérios para avaliação manual</span><textarea name="manualCriteria" rows="3" placeholder="Ex.: coerência, respeito à hierarquia, domínio dos procedimentos..."></textarea><small class="field-help">Esses critérios aparecerão para o recrutador durante a análise.</small><small class="error"></small></label>
+      </div>
+    </section>
+
+    <section class="editor-section" data-options-editor>
+      <div class="editor-section-heading"><span>3</span><div><h3>Alternativas</h3><p data-options-help>Cadastre as opções e defina a pontuação de cada resposta.</p></div></div>
+      <div class="option-editor-list" data-option-list></div>
+      <button class="button secondary small" type="button" data-add-option>+ Adicionar alternativa</button>
+    </section>
+
+    <section class="editor-section">
+      <div class="editor-section-heading"><span data-final-step>4</span><div><h3>Disponibilidade</h3><p>Controle como a questão será exibida no formulário.</p></div></div>
+      <div class="question-toggle-grid">
+        <label class="question-toggle"><input type="checkbox" name="required" checked><span><strong>Questão obrigatória</strong><small>O candidato precisa responder para enviar a inscrição.</small></span></label>
+        <label class="question-toggle"><input type="checkbox" name="active" checked><span><strong>Questão ativa</strong><small>A questão será exibida imediatamente no formulário.</small></span></label>
+      </div>
+    </section>
+  </div>
     <div class="editor-footer">
       <button class="button danger" type="button" data-delete-current>Excluir questão</button>
       <div><button class="button secondary" type="button" data-question-cancel>Cancelar</button> <button class="button primary" type="submit">Salvar questão</button></div>

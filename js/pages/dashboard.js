@@ -206,14 +206,98 @@ document.addEventListener("DOMContentLoaded",async()=>{
 
 
   let questions=[];
+  let draggedQuestionId=null;
+  let questionOrderSaving=false;
+
+  const persistQuestionOrder=async()=>{
+    if(questionOrderSaving)return;
+    questionOrderSaving=true;
+    const list=document.querySelector("[data-question-list]");
+    list?.classList.add("is-saving");
+    try{
+      await QuestionsService.saveOrder(questions);
+      try{await AuditService.write("questions_reordered","questionnaire",null,null,{order:questions.map(q=>q.id)})}catch{}
+      showToast("Ordem das questões atualizada.");
+    }catch(error){
+      console.error(error);
+      showToast("Não foi possível salvar a nova ordem.");
+      await renderQuestions();
+    }finally{
+      questionOrderSaving=false;
+      list?.classList.remove("is-saving");
+    }
+  };
+
+  const moveQuestion=async(id,direction)=>{
+    if(!profile.permissions.questions_manage||questionOrderSaving)return;
+    const from=questions.findIndex(question=>question.id===id);
+    const to=from+direction;
+    if(from<0||to<0||to>=questions.length)return;
+    [questions[from],questions[to]]=[questions[to],questions[from]];
+    renderQuestionRows();
+    await persistQuestionOrder();
+  };
+
+  const reorderQuestion=async(sourceId,targetId,placeAfter=false)=>{
+    if(!profile.permissions.questions_manage||questionOrderSaving||sourceId===targetId)return;
+    const from=questions.findIndex(question=>question.id===sourceId);
+    let to=questions.findIndex(question=>question.id===targetId);
+    if(from<0||to<0)return;
+    const [moved]=questions.splice(from,1);
+    to=questions.findIndex(question=>question.id===targetId);
+    questions.splice(to+(placeAfter?1:0),0,moved);
+    renderQuestionRows();
+    await persistQuestionOrder();
+  };
+
+  const renderQuestionRows=()=>{
+    const list=document.querySelector("[data-question-list]");
+    list.innerHTML=questions.map((q,index)=>`<article class="question-editor-row" data-question-row="${q.id}" draggable="${profile.permissions.questions_manage?'true':'false'}">
+      <button class="drag-handle" type="button" aria-label="Arrastar questão ${index+1} para reorganizar" title="Arraste para reorganizar" ${profile.permissions.questions_manage?'':'disabled'}>⋮⋮</button>
+      <div><span class="eyebrow">${escapeHTML(q.category)}</span><h3>${index+1}. ${escapeHTML(q.title)}</h3>
+      <div class="question-meta"><span>${q.question_type}</span><span>${q.points} pontos</span><span>${q.active?"Ativa":"Inativa"}</span></div></div>
+      <div class="question-row-actions">
+        ${profile.permissions.questions_manage?`<div class="order-buttons" aria-label="Alterar posição"><button class="icon-button order-button" type="button" data-move-question="up" data-question-id="${q.id}" ${index===0?'disabled':''} aria-label="Mover para cima">↑</button><button class="icon-button order-button" type="button" data-move-question="down" data-question-id="${q.id}" ${index===questions.length-1?'disabled':''} aria-label="Mover para baixo">↓</button></div><button class="button secondary small" data-edit-question="${q.id}">Editar</button>`:""}
+      </div></article>`).join("");
+    document.querySelector("[data-question-empty]").classList.toggle("hidden",questions.length>0);
+
+    list.querySelectorAll("[data-edit-question]").forEach(btn=>btn.addEventListener("click",()=>openQuestion(btn.dataset.editQuestion)));
+    list.querySelectorAll("[data-move-question]").forEach(btn=>btn.addEventListener("click",()=>moveQuestion(btn.dataset.questionId,btn.dataset.moveQuestion==="up"?-1:1)));
+
+    list.querySelectorAll("[data-question-row]").forEach(row=>{
+      row.addEventListener("dragstart",event=>{
+        if(!profile.permissions.questions_manage||questionOrderSaving){event.preventDefault();return}
+        draggedQuestionId=row.dataset.questionRow;
+        row.classList.add("is-dragging");
+        event.dataTransfer.effectAllowed="move";
+        event.dataTransfer.setData("text/plain",draggedQuestionId);
+      });
+      row.addEventListener("dragover",event=>{
+        if(!draggedQuestionId||draggedQuestionId===row.dataset.questionRow)return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect="move";
+        list.querySelectorAll(".drag-over-before,.drag-over-after").forEach(item=>item.classList.remove("drag-over-before","drag-over-after"));
+        const rect=row.getBoundingClientRect();
+        row.classList.add(event.clientY>rect.top+rect.height/2?"drag-over-after":"drag-over-before");
+      });
+      row.addEventListener("drop",async event=>{
+        event.preventDefault();
+        const rect=row.getBoundingClientRect();
+        const after=event.clientY>rect.top+rect.height/2;
+        const sourceId=draggedQuestionId||event.dataTransfer.getData("text/plain");
+        list.querySelectorAll(".drag-over-before,.drag-over-after").forEach(item=>item.classList.remove("drag-over-before","drag-over-after"));
+        await reorderQuestion(sourceId,row.dataset.questionRow,after);
+      });
+      row.addEventListener("dragend",()=>{
+        draggedQuestionId=null;
+        list.querySelectorAll(".is-dragging,.drag-over-before,.drag-over-after").forEach(item=>item.classList.remove("is-dragging","drag-over-before","drag-over-after"));
+      });
+    });
+  };
+
   const renderQuestions=async()=>{
     questions=await QuestionsService.staffList();
-    document.querySelector("[data-question-list]").innerHTML=questions.map((q,index)=>`<article class="question-editor-row">
-      <div class="drag-handle">⋮⋮</div><div><span class="eyebrow">${escapeHTML(q.category)}</span><h3>${index+1}. ${escapeHTML(q.title)}</h3>
-      <div class="question-meta"><span>${q.question_type}</span><span>${q.points} pontos</span><span>${q.active?"Ativa":"Inativa"}</span></div></div>
-      <div class="question-row-actions">${profile.permissions.questions_manage?`<button class="button secondary small" data-edit-question="${q.id}">Editar</button>`:""}</div></article>`).join("");
-    document.querySelector("[data-question-empty]").classList.toggle("hidden",questions.length>0);
-    document.querySelectorAll("[data-edit-question]").forEach(btn=>btn.addEventListener("click",()=>openQuestion(btn.dataset.editQuestion)));
+    renderQuestionRows();
   };
 
   const questionModal=document.querySelector("[data-question-modal]");
@@ -224,6 +308,50 @@ document.addEventListener("DOMContentLoaded",async()=>{
     row.innerHTML=`<input type="text" data-label value="${escapeHTML(option.label||"")}" placeholder="Alternativa"><input type="number" data-points value="${option.points||0}" min="0"><label class="option-check"><input type="radio" name="correct" ${option.correct?"checked":""}> Correta</label><label class="option-check"><input type="checkbox" data-eliminatory ${option.eliminatory?"checked":""}> Elimina</label><button class="icon-button" type="button">×</button>`;
     row.querySelector("button").addEventListener("click",()=>row.remove());optionList.appendChild(row);
   };
+
+  const syncQuestionEditor=()=>{
+    const type=questionForm.type.value;
+    const isOpen=type==="open";
+    const isObjective=type==="objective";
+    const scoringSection=document.querySelector("[data-scoring-section]");
+    const openSettings=document.querySelector("[data-open-settings]");
+    const optionsEditor=document.querySelector("[data-options-editor]");
+    const guideTitle=document.querySelector("[data-type-guide-title]");
+    const guideText=document.querySelector("[data-type-guide-text]");
+    const optionsHelp=document.querySelector("[data-options-help]");
+    const finalStep=document.querySelector("[data-final-step]");
+
+    scoringSection?.classList.toggle("hidden",!isObjective);
+    openSettings?.classList.toggle("hidden",!isOpen);
+    optionsEditor?.classList.toggle("hidden",isOpen);
+    if(finalStep)finalStep.textContent=isOpen?"3":"4";
+
+    const guides={
+      objective:["Questão objetiva","O candidato escolhe uma alternativa. Os pontos são convertidos para a nota automática de 0 a 10."],
+      eliminatory:["Questão eliminatória","Uma alternativa marcada como eliminatória reprova o candidato independentemente da nota."],
+      open:["Questão aberta","A resposta será lida pelo recrutador e não terá pontuação automática."]
+    };
+    const [title,text]=guides[type]||guides.objective;
+    if(guideTitle)guideTitle.textContent=title;
+    if(guideText)guideText.textContent=text;
+    if(optionsHelp)optionsHelp.textContent=isObjective
+      ?"Cadastre as opções e informe quantos pontos cada resposta concede."
+      :"Cadastre as opções e marque somente as respostas que devem eliminar o candidato.";
+
+    optionList.querySelectorAll("[data-points]").forEach(input=>{
+      input.closest(".option-editor-row")?.classList.toggle("hide-option-points",!isObjective);
+      input.disabled=!isObjective;
+      if(!isObjective)input.value=0;
+    });
+    optionList.querySelectorAll('input[name="correct"]').forEach(input=>{
+      input.closest(".option-check")?.classList.toggle("hidden",!isObjective);
+    });
+    optionList.querySelectorAll("[data-eliminatory]").forEach(input=>{
+      input.closest(".option-check")?.classList.toggle("hidden",type!=="eliminatory");
+      if(type!=="eliminatory")input.checked=false;
+    });
+  };
+
   const openQuestion=id=>{
     const q=questions.find(item=>item.id===id);
     questionForm.reset();optionList.innerHTML="";
@@ -239,10 +367,12 @@ document.addEventListener("DOMContentLoaded",async()=>{
     questionForm.active.checked=q?.active!==false;
     (q?.options||[]).forEach(option=>addOption({...option,correct:q.correct_option===option.id,eliminatory:(q.eliminatory_options||[]).includes(option.id)}));
     if(!q){addOption();addOption()}
+    syncQuestionEditor();
     questionModal.showModal();
   };
   document.querySelector("[data-new-question]")?.addEventListener("click",()=>openQuestion());
-  document.querySelector("[data-add-option]")?.addEventListener("click",()=>addOption());
+  document.querySelector("[data-add-option]")?.addEventListener("click",()=>{addOption();syncQuestionEditor()});
+  questionForm?.type.addEventListener("change",syncQuestionEditor);
   document.querySelector("[data-question-modal-close]")?.addEventListener("click",()=>questionModal.close());
   document.querySelector("[data-question-cancel]")?.addEventListener("click",()=>questionModal.close());
   questionForm?.addEventListener("submit",async event=>{
@@ -256,11 +386,15 @@ document.addEventListener("DOMContentLoaded",async()=>{
       id:questionForm.id.value||crypto.randomUUID(),title:questionForm.title.value.trim(),
       description:questionForm.description.value.trim(),category:questionForm.category.value.trim(),
       question_type:questionForm.type.value,required:questionForm.required.checked,active:questionForm.active.checked,
-      order_position:existing?.order_position||questions.length+1,points:Number(questionForm.points.value||0),
-      options:questionForm.type.value==="open"?[]:options.map(({correct,eliminatory,...rest})=>rest),
-      correct_option:options.find(o=>o.correct)?.id||null,
-      eliminatory_options:options.filter(o=>o.eliminatory).map(o=>o.id),
-      min_length:Number(questionForm.minLength.value||0),manual_criteria:questionForm.manualCriteria.value.trim()
+      order_position:existing?.order_position||questions.length+1,
+      points:questionForm.type.value==="objective"?Number(questionForm.points.value||0):0,
+      options:questionForm.type.value==="open"?[]:options.map(({correct,eliminatory,...rest})=>({
+        ...rest,points:questionForm.type.value==="objective"?rest.points:0
+      })),
+      correct_option:questionForm.type.value==="objective"?(options.find(o=>o.correct)?.id||null):null,
+      eliminatory_options:questionForm.type.value==="eliminatory"?options.filter(o=>o.eliminatory).map(o=>o.id):[],
+      min_length:questionForm.type.value==="open"?Number(questionForm.minLength.value||0):0,
+      manual_criteria:questionForm.type.value==="open"?questionForm.manualCriteria.value.trim():""
     };
     await QuestionsService.save(payload);questionModal.close();await renderQuestions();showToast("Questão salva.");
   });
@@ -690,14 +824,41 @@ document.addEventListener("DOMContentLoaded",async()=>{
     const item=await SettingsService.get();
     const form=document.querySelector("#settings-form");
     form.recruitmentOpen.checked=item.recruitment_open;
-    form.minimumScore.value=item.minimum_score;
+    form.minimumScore.value=item.minimum_score ?? 7;
+    updateMinimumScoreStatus(item.minimum_score ?? 7);
     form.retryDays.value=item.retry_days;
     form.showPublicReason.checked=item.show_public_reason;
   };
+  const updateMinimumScoreStatus=value=>{
+    const status=document.querySelector("[data-minimum-score-status]");
+    if(status)status.textContent=`Regra atual: mínimo de ${Number(value).toFixed(1).replace(".",",")} em 10 pontos.`;
+  };
+  document.querySelector("#settings-form")?.minimumScore?.addEventListener("input",event=>updateMinimumScoreStatus(event.target.value||0));
   document.querySelector("#settings-form")?.addEventListener("submit",async event=>{
-    event.preventDefault();const form=event.currentTarget;
-    await SettingsService.save({recruitment_open:form.recruitmentOpen.checked,minimum_score:Number(form.minimumScore.value),retry_days:Number(form.retryDays.value),show_public_reason:form.showPublicReason.checked});
-    showToast("Configurações salvas.");
+    event.preventDefault();
+    const form=event.currentTarget;
+    const minimumScore=Number(form.minimumScore.value);
+    const error=document.querySelector("[data-minimum-score-error]");
+    if(!Number.isFinite(minimumScore)||minimumScore<0||minimumScore>10){
+      if(error)error.textContent="Informe uma nota entre 0 e 10.";
+      form.minimumScore.focus();
+      return;
+    }
+    if(error)error.textContent="";
+    const button=form.querySelector('button[type="submit"]');
+    button.disabled=true;
+    button.textContent="Salvando...";
+    try{
+      const saved=await SettingsService.save({recruitment_open:form.recruitmentOpen.checked,minimum_score:minimumScore,retry_days:Number(form.retryDays.value),show_public_reason:form.showPublicReason.checked});
+      form.minimumScore.value=saved.minimum_score;
+      updateMinimumScoreStatus(saved.minimum_score);
+      showToast("Configurações salvas. A nova nota mínima já está ativa.");
+    }catch(error){
+      showToast(error.message||"Não foi possível salvar as configurações.");
+    }finally{
+      button.disabled=false;
+      button.textContent="Salvar configurações";
+    }
   });
 
   document.querySelector("[data-clear-demo]")?.addEventListener("click",async event=>{

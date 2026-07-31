@@ -346,8 +346,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
+    const normalizedScore = maxAutoScore > 0
+      ? Math.round((autoScore / maxAutoScore) * 100) / 10
+      : 0;
+    const minimumScore = Number(settings.minimum_score ?? 7);
     const status =
-      eliminatory || autoScore < settings.minimum_score
+      eliminatory || normalizedScore < minimumScore
         ? "Reprovado automaticamente"
         : "Em análise";
 
@@ -366,8 +370,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       availability: values.availability.trim(),
       experience: values.experience.trim(),
       answers,
-      automatic_score: autoScore,
-      maximum_automatic_score: maxAutoScore,
+      automatic_score: normalizedScore,
+      maximum_automatic_score: 10,
       status,
       public_note:
         status === "Em análise"

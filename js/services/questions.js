@@ -31,13 +31,19 @@ window.QuestionsService = {
   },
 
   async saveOrder(questions) {
-    const payload = questions.map((question, index) => ({
-      ...question,
-      order_position: index + 1,
-      updated_at: new Date().toISOString()
-    }));
-    const { error } = await supabaseClient.from("recruitment_questions").upsert(payload);
-    if (error) throw error;
+    const updates = questions.map((question, index) =>
+      supabaseClient
+        .from("recruitment_questions")
+        .update({
+          order_position: index + 1,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", question.id)
+    );
+
+    const results = await Promise.all(updates);
+    const failure = results.find(result => result.error);
+    if (failure?.error) throw failure.error;
   },
 
   async remove(id) {

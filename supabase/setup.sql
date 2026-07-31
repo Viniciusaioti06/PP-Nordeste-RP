@@ -28,7 +28,7 @@ create table if not exists public.profiles (
 create table if not exists public.recruitment_settings (
   id integer primary key default 1 check (id=1),
   recruitment_open boolean not null default true,
-  minimum_score integer not null default 4,
+  minimum_score numeric(4,1) not null default 7,
   retry_days integer not null default 7,
   show_public_reason boolean not null default false,
   updated_at timestamptz not null default now()
