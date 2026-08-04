@@ -87,10 +87,39 @@ window.ApplicationsService = {
     return data;
   },
 
-  async deleteAll() {
+  async deleteAll(confirmation) {
     requireConfig();
-    const { data, error } = await supabaseClient.rpc("delete_all_recruitment_applications");
-    if (error) throw error;
-    return Number(data || 0);
+
+    const { data, error } = await supabaseClient.functions.invoke(
+      "clear-applications",
+      {
+        body: { confirmation }
+      }
+    );
+
+    if (error) {
+      let message = error.message || "Não foi possível executar a manutenção.";
+
+      try {
+        const context = error.context;
+        if (context instanceof Response) {
+          const payload = await context.clone().json();
+          message = payload?.error || message;
+        }
+      } catch (_) {
+        // Mantém a mensagem original quando a resposta não for JSON.
+      }
+
+      throw new Error(message);
+    }
+
+    if (!data?.ok) {
+      throw new Error(data?.error || "A manutenção não foi concluída.");
+    }
+
+    return {
+      deletedApplications: Number(data.deletedApplications || 0),
+      deletedIdentities: Number(data.deletedIdentities || 0)
+    };
   }
 };

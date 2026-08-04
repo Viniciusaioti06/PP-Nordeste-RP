@@ -862,8 +862,13 @@ document.addEventListener("DOMContentLoaded",async()=>{
   });
 
   document.querySelector("[data-clear-demo]")?.addEventListener("click",async event=>{
-    if(!profile.permissions?.settings_manage){
-      showToast("Você não possui permissão para executar esta ação.");
+    if(profile.role!=="admin"){
+      showToast("Somente administradores podem executar esta manutenção.");
+      return;
+    }
+
+    if(!profile.permissions?.settings_manage||!profile.permissions?.applications_delete){
+      showToast("Seu usuário não possui as permissões de manutenção necessárias.");
       return;
     }
 
@@ -885,12 +890,24 @@ document.addEventListener("DOMContentLoaded",async()=>{
     if(status)status.textContent="Processando exclusão no Supabase...";
 
     try{
-      const deletedCount=await ApplicationsService.deleteAll();
+      const result=await ApplicationsService.deleteAll(typed);
       applications=[];
       renderStats();
       await renderApplications();
-      if(status)status.textContent=`${deletedCount} inscrição(ões) excluída(s).`;
-      showToast(`${deletedCount} inscrição(ões) excluída(s) com sucesso.`);
+
+      const deletedApplications=result.deletedApplications;
+      const deletedIdentities=result.deletedIdentities;
+
+      if(status){
+        status.textContent=
+          `${deletedApplications} inscrição(ões) e ${deletedIdentities} vínculo(s) antifraude removido(s).`;
+      }
+
+      showToast(
+        deletedApplications
+          ? `${deletedApplications} inscrição(ões) excluída(s) com segurança.`
+          : "Não havia inscrições cadastradas."
+      );
     }catch(error){
       console.error("Erro ao excluir inscrições:",error);
       if(status)status.textContent="Não foi possível concluir a exclusão.";
