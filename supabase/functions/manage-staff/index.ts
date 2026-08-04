@@ -113,6 +113,49 @@ Deno.serve(async (request: Request): Promise<Response> => {
       return Response.json({ ok: true }, { headers: corsHeaders });
     }
 
+
+    if (action === "clearApplications") {
+      if (callerProfile.role !== "admin") {
+        throw new Error("Somente administradores podem excluir todas as inscrições.");
+      }
+
+      if (
+        !callerProfile.permissions?.settings_manage ||
+        !callerProfile.permissions?.applications_delete
+      ) {
+        throw new Error("Seu usuário não possui as permissões de manutenção necessárias.");
+      }
+
+      if (payload.confirmation !== "EXCLUIR TODAS") {
+        throw new Error("Confirmação de segurança inválida.");
+      }
+
+      const actorName =
+        callerProfile.display_name?.trim() ||
+        callerProfile.email?.trim() ||
+        "Administrador";
+
+      const { data: result, error: clearError } = await adminClient.rpc(
+        "admin_clear_recruitment_data",
+        {
+          p_actor_id: callerData.user.id,
+          p_actor_name: actorName,
+          p_actor_role: callerProfile.role,
+        },
+      );
+
+      if (clearError) throw clearError;
+
+      return Response.json(
+        {
+          ok: true,
+          deletedApplications: Number(result?.deleted_applications || 0),
+          deletedIdentities: Number(result?.deleted_identities || 0),
+        },
+        { headers: corsHeaders },
+      );
+    }
+
     throw new Error("Ação inválida.");
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro interno.";

@@ -91,9 +91,12 @@ window.ApplicationsService = {
     requireConfig();
 
     const { data, error } = await supabaseClient.functions.invoke(
-      "clear-applications",
+      "manage-staff",
       {
-        body: { confirmation }
+        body: {
+          action: "clearApplications",
+          payload: { confirmation }
+        }
       }
     );
 
@@ -106,9 +109,7 @@ window.ApplicationsService = {
           const payload = await context.clone().json();
           message = payload?.error || message;
         }
-      } catch (_) {
-        // Mantém a mensagem original quando a resposta não for JSON.
-      }
+      } catch (_) {}
 
       throw new Error(message);
     }
