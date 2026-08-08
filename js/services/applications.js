@@ -68,12 +68,27 @@ window.ApplicationsService = {
   },
 
   async list() {
+    requireConfig();
     const { data, error } = await supabaseClient
       .from("recruitment_applications")
       .select("*")
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return data;
+    return data || [];
+  },
+
+  async getById(id) {
+    requireConfig();
+    if (!id) throw new Error("Identificador do candidato não informado.");
+
+    const { data, error } = await supabaseClient
+      .from("recruitment_applications")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data || null;
   },
 
   async update(id, patch) {

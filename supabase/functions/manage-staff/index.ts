@@ -1,4 +1,3 @@
-
 import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
@@ -25,48 +24,37 @@ Deno.serve(async (request: Request): Promise<Response> => {
     const { data: { user }, error: userError } = await caller.auth.getUser();
     if (userError || !user) return Response.json({ error: "Sessão inválida." }, { status: 401, headers: corsHeaders });
 
-    const { data: profile, error: profileError } = await admin
-      .from("profiles").select("active,permissions").eq("id", user.id).single();
+    const { data: callerProfile, error: profileError } = await admin
+      .from("profiles")
+      .select("id,display_name,email,role,active,permissions")
+      .eq("id", user.id)
+      .single();
 
-    if (profileError || !profile?.active || !profile.permissions?.staff_manage) {
-      return Response.json({ error: "Sem permissão para gerenciar a equipe." }, { status: 403, headers: corsHeaders });
+    if (profileError || !callerProfile?.active) {
+      return Response.json({ error: "Perfil interno ativo não encontrado." }, { status: 403, headers: corsHeaders });
     }
 
     const { action, userId, payload = {} } = await request.json();
+
+    if (["create", "update", "delete"].includes(action) && !callerProfile.permissions?.staff_manage) {
+      return Response.json({ error: "Sem permissão para gerenciar a equipe." }, { status: 403, headers: corsHeaders });
+    }
 
     if (action === "create") {
       const { data: created, error } = await admin.auth.admin.createUser({
         email: payload.email,
         password: payload.password,
         email_confirm: true,
-        user_metadata: {
-          display_name: payload.name,
-          username: payload.username,
-          discord: payload.discord
-        }
+        user_metadata: { display_name: payload.name, username: payload.username, discord: payload.discord },
       });
       if (error) throw error;
 
-      const { data: staff, error: staffError } = await admin
-        .from("profiles")
-        .update({
-          display_name: payload.name,
-          username: payload.username,
-          email: payload.email,
-          discord: payload.discord,
-          role: payload.role,
-          active: payload.active,
-          permissions: payload.permissions,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", created.user.id)
-        .select()
-        .single();
+      const { data: staff, error: staffError } = await admin.from("profiles").update({
+        display_name: payload.name, username: payload.username, email: payload.email, discord: payload.discord,
+        role: payload.role, active: payload.active, permissions: payload.permissions, updated_at: new Date().toISOString(),
+      }).eq("id", created.user.id).select().single();
 
-      if (staffError) {
-        await admin.auth.admin.deleteUser(created.user.id);
-        throw staffError;
-      }
+      if (staffError) { await admin.auth.admin.deleteUser(created.user.id); throw staffError; }
       return Response.json({ profile: staff }, { status: 201, headers: corsHeaders });
     }
 
@@ -74,33 +62,16 @@ Deno.serve(async (request: Request): Promise<Response> => {
       if (!userId) throw new Error("ID não informado.");
       const patch: Record<string, unknown> = {
         email: payload.email,
-        user_metadata: {
-          display_name: payload.name,
-          username: payload.username,
-          discord: payload.discord
-        }
+        user_metadata: { display_name: payload.name, username: payload.username, discord: payload.discord },
       };
       if (payload.password?.trim()) patch.password = payload.password;
-
       const { error: authError } = await admin.auth.admin.updateUserById(userId, patch);
       if (authError) throw authError;
 
-      const { data: staff, error } = await admin
-        .from("profiles")
-        .update({
-          display_name: payload.name,
-          username: payload.username,
-          email: payload.email,
-          discord: payload.discord,
-          role: payload.role,
-          active: payload.active,
-          permissions: payload.permissions,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", userId)
-        .select()
-        .single();
-
+      const { data: staff, error } = await admin.from("profiles").update({
+        display_name: payload.name, username: payload.username, email: payload.email, discord: payload.discord,
+        role: payload.role, active: payload.active, permissions: payload.permissions, updated_at: new Date().toISOString(),
+      }).eq("id", userId).select().single();
       if (error) throw error;
       return Response.json({ profile: staff }, { headers: corsHeaders });
     }
@@ -113,47 +84,24 @@ Deno.serve(async (request: Request): Promise<Response> => {
       return Response.json({ ok: true }, { headers: corsHeaders });
     }
 
-
     if (action === "clearApplications") {
-      if (callerProfile.role !== "admin") {
-        throw new Error("Somente administradores podem excluir todas as inscrições.");
-      }
-
-      if (
-        !callerProfile.permissions?.settings_manage ||
-        !callerProfile.permissions?.applications_delete
-      ) {
+      if (callerProfile.role !== "admin") throw new Error("Somente administradores podem excluir todas as inscrições.");
+      if (!callerProfile.permissions?.settings_manage || !callerProfile.permissions?.applications_delete) {
         throw new Error("Seu usuário não possui as permissões de manutenção necessárias.");
       }
+      if (payload.confirmation !== "EXCLUIR TODAS") throw new Error("Confirmação de segurança inválida.");
 
-      if (payload.confirmation !== "EXCLUIR TODAS") {
-        throw new Error("Confirmação de segurança inválida.");
-      }
-
-      const actorName =
-        callerProfile.display_name?.trim() ||
-        callerProfile.email?.trim() ||
-        "Administrador";
-
-      const { data: result, error: clearError } = await adminClient.rpc(
-        "admin_clear_recruitment_data",
-        {
-          p_actor_id: callerData.user.id,
-          p_actor_name: actorName,
-          p_actor_role: callerProfile.role,
-        },
-      );
-
+      const actorName = callerProfile.display_name?.trim() || callerProfile.email?.trim() || "Administrador";
+      const { data: result, error: clearError } = await admin.rpc("admin_clear_recruitment_data", {
+        p_actor_id: user.id, p_actor_name: actorName, p_actor_role: callerProfile.role,
+      });
       if (clearError) throw clearError;
 
-      return Response.json(
-        {
-          ok: true,
-          deletedApplications: Number(result?.deleted_applications || 0),
-          deletedIdentities: Number(result?.deleted_identities || 0),
-        },
-        { headers: corsHeaders },
-      );
+      return Response.json({
+        ok: true,
+        deletedApplications: Number(result?.deleted_applications || 0),
+        deletedIdentities: Number(result?.deleted_identities || 0),
+      }, { headers: corsHeaders });
     }
 
     throw new Error("Ação inválida.");
